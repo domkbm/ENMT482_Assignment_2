@@ -13,7 +13,7 @@ Mazzer_Off_Button = 25
 Mazzer_On_Button = 26
 Mazzer_Scale = 6
 Mazzer_Scale_Ball = 29
-Mazzer_Scale_Lock = 30
+Mazzer_Scale_Lock = 31
 
 PUQ = 8
 PUQ_Clamp = 34

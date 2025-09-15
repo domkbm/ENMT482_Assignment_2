@@ -82,28 +82,19 @@ robot_program = RDK.Item("Reset_Simulation_L", ITEM_TYPE_PROGRAM)
 robot_program.RunCode()
 robot_program.WaitFinished()
 
-
-#TODO a) Pick up the Rancilio tool and place it on the Mazzer Scale pan.
-# tls.rancilio_tool_attach_l_ati()
-UR5.MoveJ([107.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) 
-UR5.MoveJ([112.080000, -102.170000, 119.960000, -107.180000, -65.270000, -164.280000])
-UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
-UR5.MoveJ(tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_Indent, theta_y=90, theta_z=180, pos_y = 25, pos_z=7.2), blocking=True) # magic numbers for y and z, ask ben why.
-tls.student_tool_detach()
-UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
-
- 
-# #TODO b) Use the Mazzer tool to unlock the Mazzer Scale.
+# # pick up mazzer tool
 tls.mazzer_tool_attach_l_ati()
 
+
+#TODO b) Use the Mazzer tool to unlock the Mazzer Scale.
 UR5.MoveJ([117.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) #intermeidate point to avoid the mazzer
-UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=50,theta_x=-120), blocking=True)
+UR5.MoveJ(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=50,theta_y=180, theta_z=180), blocking=True)
 print("move to above the lock")
-UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=-5,theta_x=-120), blocking=True)
+UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=-5,theta_y=180, theta_z=180), blocking=True)
 print("move to unlock the lock")
-UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -20, pos_z=-5,theta_x=-120), blocking=True)
+UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -20, pos_z=-7,theta_y=180, theta_z=180), blocking=True)
 print("move to unlock the lock")
-UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=50,theta_x=-120), blocking=True)
+UR5.MoveJ(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=50,theta_y=180, theta_z=180), blocking=True)
 print("move to above the lock")
 
 

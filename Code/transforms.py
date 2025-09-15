@@ -171,7 +171,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
         tool_row['Z'] - off_z,
         tool_row.get('Euler_Rx', 0),
         tool_row.get('Euler_Ry', 0),
-        tool_row.get('Euler_Rz', 0)])
+        tool_row.get('Euler_Rz', 0) - np.deg2rad(50)])
         tool_ht = robomath.invH(tool_ht)
         # print(f"TOOL Row {tool_row}")
         # print(f"tool pose {tool_row['X'],tool_row['Y'],tool_row['Z'],}")
