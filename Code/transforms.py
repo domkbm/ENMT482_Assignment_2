@@ -19,7 +19,7 @@ import indices as idx
 
             
 
-def create_points_df(robot_name='robot_3', filepath='robodk_stations/points.xlsx'):
+def create_points_df(robot_name='robot_3', filepath='points.xlsx'):
     points_df = pd.read_excel(filepath, sheet_name=robot_name)
     points_df['Euler_Rx'] = np.nan
     points_df['Euler_Ry'] = np.nan
@@ -138,7 +138,7 @@ def get_global_frame(frame_df, frame_key):
     return frame_ht
 
 
-def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x = 0, theta_y = 0, theta_z = 0, off_x = 0, off_y = 0, off_z = 0):
+def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x = 0, theta_y = 0, theta_z = 0, off_x = 0, off_y = 0, off_z = 0, off_theta_x = 0, off_theta_y = 0, off_theta_z = 0):
     """
     Compute the global pose of a frame/tool by recursively walking up the frame hierarchy.
 
@@ -159,16 +159,19 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
     theta_x = np.deg2rad(theta_x)
     theta_y = np.deg2rad(theta_y)
     theta_z = np.deg2rad(theta_z)
-
+    off_theta_x = np.deg2rad(off_theta_x)
+    off_theta_y = np.deg2rad(off_theta_y)
+    off_theta_z = np.deg2rad(off_theta_z)
+    tool_off = TxyzRxyz_2_Pose([off_x,off_y,off_z,off_theta_x,off_theta_y,off_theta_z])
     if tool == None:
         tool_ht = TxyzRxyz_2_Pose([0,0,0,0,0,0])
     else:
         tcp_key = tool
         tool_row = frame_df.loc[frame_df['Key'] == tcp_key].iloc[0]
         tool_ht = TxyzRxyz_2_Pose([
-        tool_row['X'] - off_x,
-        tool_row['Y'] - off_y,
-        tool_row['Z'] - off_z,
+        tool_row['X'],
+        tool_row['Y'],
+        tool_row['Z'],
         tool_row.get('Euler_Rx', 0),
         tool_row.get('Euler_Ry', 0),
         tool_row.get('Euler_Rz', 0) - np.deg2rad(50)])
@@ -197,7 +200,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
     combined_ht = frame_ht * local_ht
        
     if frame_row['Origin'] == 'yes': # This is an orgin in world co-ords, end of the line.
-        return combined_ht * tool_ht
+        return combined_ht * tool_ht * tool_off
     else:
         # nothing is defined under two local transforms so not really nessesary to do recursive (readibility) to compute the parent global transform
         perant_rows = frame_df[
@@ -207,10 +210,47 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
             ]
     
         perant_key = perant_rows.iloc[0]['Key']
-        return get_global_frame(frame_df, perant_key) * combined_ht * tool_ht
+        return get_global_frame(frame_df, perant_key) * combined_ht * tool_ht * tool_off
 
 
+def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=60):
+    """
+    Generate a list of poses by rotating initial_pose around rot_c_pose along global Z axis.
 
+    Args:
+        initial_pose (4x4 np.array): Initial pose HT matrix.
+        rot_c_pose (4x4 np.array): Center of rotation HT matrix.
+        rotation_deg (float): Total rotation angle in degrees.
+        n_steps (int): Number of discrete steps in the path.
+
+    Returns:
+        list of 4x4 np.array: List of HT matrices representing the path.
+    """
+    poses = []
+    angle_step = np.deg2rad(rotation_deg) / n_steps
+
+    # Extract the rotation center position
+    rotated_center = Pose_2_TxyzRxyz(rot_c_pose)
+    rot_c_pose = TxyzRxyz_2_Pose([rotated_center[0],rotated_center[1],rotated_center[2], 0,0,0])
+
+    for i in range(n_steps + 1):
+        angle = angle_step * i
+
+        # Create rotation matrix around Z axis
+        Rz = TxyzRxyz_2_Pose([0,0,0,0,0,angle])
+
+        # Move initial_pose to rotation center frame
+        pose_in_center = robomath.invH(rot_c_pose) * initial_pose
+
+        # Rotate pose around Z axis by angle
+        rotated_pose_in_center = Rz * pose_in_center
+
+        # Transform back to global frame
+        rotated_pose = rot_c_pose * rotated_pose_in_center
+
+        poses.append(rotated_pose)
+
+    return poses
 
 if __name__ == "__main__":
     frames = create_points_df()
