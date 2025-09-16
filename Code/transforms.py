@@ -162,9 +162,26 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
     off_theta_x = np.deg2rad(off_theta_x)
     off_theta_y = np.deg2rad(off_theta_y)
     off_theta_z = np.deg2rad(off_theta_z)
-    tool_off = TxyzRxyz_2_Pose([off_x,off_y,off_z,off_theta_x,off_theta_y,off_theta_z])
+    tool_off = TxyzRxyz_2_Pose([off_x,off_y,off_z,0,0,0])
+    tool_off = robomath.invH(tool_off)
     if tool == None:
         tool_ht = TxyzRxyz_2_Pose([0,0,0,0,0,0])
+    elif tool == 63: #specal case for placing the base of the rancillo on somthing
+        base_key = 55 # basket
+        rotation_key = 63# handle rotation
+        depth_key = 64# depth
+        base_row = frame_df.loc[frame_df['Key'] == base_key].iloc[0]
+        rotation_row = frame_df.loc[frame_df['Key'] == rotation_key].iloc[0]
+        depth_row = frame_df.loc[frame_df['Key'] == depth_key].iloc[0]
+        tool_ht = TxyzRxyz_2_Pose([
+            base_row['X'] - depth_row['X'],
+            base_row['Y'],
+            base_row['Z'],
+            base_row.get('Euler_Rx', 0), # + np.rad2deg(rotation_row)
+            base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row['X']),
+            base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
+        tool_ht = robomath.invH(tool_ht)
+
     else:
         tcp_key = tool
         tool_row = frame_df.loc[frame_df['Key'] == tcp_key].iloc[0]
@@ -174,7 +191,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
         tool_row['Z'],
         tool_row.get('Euler_Rx', 0),
         tool_row.get('Euler_Ry', 0),
-        tool_row.get('Euler_Rz', 0) - np.deg2rad(50)])
+        tool_row.get('Euler_Rz', 0) ]) #- np.deg2rad(50)
         tool_ht = robomath.invH(tool_ht)
         # print(f"TOOL Row {tool_row}")
         # print(f"tool pose {tool_row['X'],tool_row['Y'],tool_row['Z'],}")
@@ -200,7 +217,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
     combined_ht = frame_ht * local_ht
        
     if frame_row['Origin'] == 'yes': # This is an orgin in world co-ords, end of the line.
-        return combined_ht * tool_ht * tool_off
+        return combined_ht * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)-off_theta_z]) # i dont like this but sure 
     else:
         # nothing is defined under two local transforms so not really nessesary to do recursive (readibility) to compute the parent global transform
         perant_rows = frame_df[
@@ -210,7 +227,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
             ]
     
         perant_key = perant_rows.iloc[0]['Key']
-        return get_global_frame(frame_df, perant_key) * combined_ht * tool_ht * tool_off
+        return get_global_frame(frame_df, perant_key) * combined_ht * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)-off_theta_z]) # i dont like this but sure 
 
 
 def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=60):
@@ -254,7 +271,7 @@ def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=60):
 
 if __name__ == "__main__":
     frames = create_points_df()
-    mazzer = pose(frames, idx.Mazzer)
+    mazzer = pose(frames, idx.WDT, tool=idx.Rancillio_Basket_Tool_Base)
     print(mazzer)
     # on_button = pose(frames, idx.Mazzer_On_Button)
     # print(on_button)

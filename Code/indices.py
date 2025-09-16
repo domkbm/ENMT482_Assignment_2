@@ -22,6 +22,7 @@ Rancillio_Switch = 37
 Rancillio_Gasket = 38
 Rancillio_Scale = 12
 WDT = 14
+WDT_Spinner = 46
 Tool_Cleaner = 56
 Customer = 62
 
@@ -34,6 +35,7 @@ Mazzer_Bar_Tool = 52
 Rancillio_Tool = 53
 Rancillio_Indent = 54
 Rancillio_Basket_Tool = 55
+Rancillio_Basket_Tool_Base = 63
 
 
 
