@@ -230,7 +230,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
         return get_global_frame(frame_df, perant_key) * combined_ht * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)-off_theta_z]) # i dont like this but sure 
 
 
-def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=60):
+def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=60, spin_tool = True):
     """
     Generate a list of poses by rotating initial_pose around rot_c_pose along global Z axis.
 
@@ -245,14 +245,14 @@ def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=60):
     """
     poses = []
     angle_step = np.deg2rad(rotation_deg) / n_steps
-
+  
     # Extract the rotation center position
     rotated_center = Pose_2_TxyzRxyz(rot_c_pose)
     rot_c_pose = TxyzRxyz_2_Pose([rotated_center[0],rotated_center[1],rotated_center[2], 0,0,0])
 
     for i in range(n_steps + 1):
         angle = angle_step * i
-
+        z_spin = TxyzRxyz_2_Pose([0,0,0,0,0,angle if not spin_tool else 0])
         # Create rotation matrix around Z axis
         Rz = TxyzRxyz_2_Pose([0,0,0,0,0,angle])
 
@@ -263,7 +263,7 @@ def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=60):
         rotated_pose_in_center = Rz * pose_in_center
 
         # Transform back to global frame
-        rotated_pose = rot_c_pose * rotated_pose_in_center
+        rotated_pose = rot_c_pose * rotated_pose_in_center * z_spin
 
         poses.append(rotated_pose)
 
