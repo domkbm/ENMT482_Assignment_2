@@ -34,6 +34,8 @@ import tools
 import indices as id
 import transforms as tf
 
+CORRECT_WEIGHT = 32 # Grams
+
 
 # TODO: start with tasks (b), (c) and (m)
 
@@ -94,26 +96,103 @@ robot_program.RunCode()
 robot_program.WaitFinished()
 
 
-# #TODO a) Pick up the Rancilio tool and place it on the Mazzer Scale pan.
-# # tls.rancilio_tool_attach_l_ati()
-# UR5.MoveJ([107.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) 
-# UR5.MoveJ([112.080000, -102.170000, 119.960000, -107.180000, -65.270000, -164.280000])
-# UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
-# UR5.MoveJ(tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_Indent, theta_y=90, theta_z=180, pos_y = 25, pos_z=7.2), blocking=True) # magic numbers for y and z, ask ben why.
-# tls.student_tool_detach()
-# UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
 
- 
-# #TODO b) Use the Mazzer tool to unlock the Mazzer Scale.
+
 tls.mazzer_tool_attach_l_ati()
 
 
-#intermeidate point to avoid the tool holder
-UR5.MoveJ([85.45, -105, 80.20, -81.3, -90, -173.26])
+# # PART O - Ready to Test
+
+# # intermeidate point to avoid the tool holder
+# UR5.MoveJ([85.45, -105, 80.20, -81.3, -90, -173.26])
+# # Postion before unlocking scales
+# UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5, pos_y=21.53, pos_z=0, theta_x = 180), blocking=True)
+# # Flipping Ranccilio Scale Switch
+# UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5-20, pos_y=21.53, pos_z=-25, theta_x = 180), blocking=True)
+
+
+
+# # PART P - Ready to Test
+
+
+# UR5.MoveJ([16.840846, -94.755605, 114.632103, -26.459245, 35.176778, -42.243328])
+
+# # Press Switch in the Rancillio Pose
+# UR5.MoveJ(tf.pose(points_df, id.Rancillio, tool=id.Mazzer_Tip_Tool, pos_x=48.6, pos_y=38.5, pos_z=-58.2, theta_x=0, theta_y=-90, theta_z=180), blocking=True)
+
+# # Press Button
+# UR5.MoveJ(tf.pose(points_df, id.Rancillio, tool=id.Mazzer_Tip_Tool, pos_x=48.6, pos_y=38.5, pos_z=-58.2, theta_y=-90, theta_z=180, off_z=10), blocking=True)
+
+# weight = 0
+# TIMEOUT = 0
+# while (weight >= CORRECT_WEIGHT or TIMEOUT):
+#     # do weight thing
+#     time.sleep(5)
+#     break
+
+# # Slide tool down to flick switch back off
+# UR5.MoveJ(tf.pose(points_df, id.Rancillio, tool=id.Mazzer_Tip_Tool, pos_x=48.6, pos_y=38.5, pos_z=-58.2-10, theta_y=-90, theta_z=180, off_z=10), blocking=True)
+
+# # Pull Tool Back
+# UR5.MoveJ(tf.pose(points_df, id.Rancillio, tool=id.Mazzer_Tip_Tool, pos_x=48.6, pos_y=38.5, pos_z=-58.2, theta_y=-90, theta_z=180), blocking=True)
+    
+
+# PART Q - Ready to Test
+
+UR5.MoveJ([16.840846, -94.755605, 114.632103, -26.459245, 35.176778, -42.243328])
+
 # Postion before unlocking scales
-UR5.MoveJ([32.000000, -74.474122, 109.506791, -123.352668, -90.000000, -87.500000])
+UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5, pos_y=21.53, pos_z=0, theta_x = 180), blocking=True)
 # Flipping Ranccilio Scale Switch
-UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=-10, pos_y=+25, pos_z=-25, theta_x = 180), blocking=True)
+UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+20, pos_y=+25, pos_z=-25, theta_x = 180), blocking=True)
+
+
+UR5.MoveJ([47.523236, -108.009605, 95.271845, -77.263055, -90.000451, -89.608515])
+
+tls.mazzer_tool_detach_l_ati()
+        
+
+# PART R - STARTED
+# tls.cup_tool_attach_l_ati()
+
+# Go to the cup approach postison
+
+# move to postion to pick up cup
+
+# Actuate Gripper
+
+# Move cup up
+
+# Pull Cup Cout
+
+# Move to Customer Postion
+
+# Actuate Gripper
+
+# Pull Away
+
+# Move to twisted Rancillio tool aproach Postion
+
+# Go to tool
+
+# Connect
+
+# Rotate tool
+
+# Down Move
+
+# Pull Away
+
+# Clean Tool
+
+# Put Away
+
+
+
+
+
+
+
 
 
 
