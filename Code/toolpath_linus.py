@@ -107,75 +107,70 @@ robot_program.WaitFinished()
 # #TODO b) Use the Mazzer tool to unlock the Mazzer Scale.
 tls.mazzer_tool_attach_l_ati()
 
-UR5.MoveJ([117.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) #intermeidate point to avoid the mazzer
-UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=50,theta_x=-120), blocking=True)
-print("move to above the lock")
-UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=-5,theta_x=-120), blocking=True)
-print("move to unlock the lock")
-UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -20, pos_z=-5,theta_x=-120), blocking=True)
-print("move to unlock the lock")
-UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=50,theta_x=-120), blocking=True)
-print("move to above the lock")
 
-
-#TODO c) Use the Mazzer tool to turn the Mazzer on, wait 15s, and turn the Mazzer off.
-UR5.MoveJ([117.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) #intermeidate point to avoid the mazzer
-time.sleep(1)
-UR5.MoveJ(tf.pose(points_df, id.Mazzer_On_Button, tool=id.Mazzer_Tip_Tool, pos_y=10,theta_y=-110, off_z= -10), blocking=True) #go to on button
-UR5.MoveJ(tf.pose(points_df, id.Mazzer_On_Button, tool=id.Mazzer_Tip_Tool, pos_y=10,theta_y=-110, off_z= 10), blocking=True) #push on button
-the_time = time.time()
-UR5.MoveJ(tf.pose(points_df, id.Mazzer_On_Button, tool=id.Mazzer_Tip_Tool, pos_y=10,theta_y=-110, off_z= -10), blocking=True) #go to on button
-UR5.MoveJ(tf.pose(points_df, id.Mazzer_Off_Button, tool=id.Mazzer_Tip_Tool, pos_y=15,theta_y=-130, off_z=-3), blocking=True) #go to off button
-time.sleep(1)
-while (time.time() - the_time) < 1: # wait 15 secs
-    print(f"Waited {time.time() - the_time:.1f} s")
-    pass # do nothing
-UR5.MoveJ(tf.pose(points_df, id.Mazzer_Off_Button, tool=id.Mazzer_Tip_Tool, pos_y=15,theta_y=-130, off_z= 3), blocking=True) #push off button
-UR5.MoveJ(tf.pose(points_df, id.Mazzer_Off_Button, tool=id.Mazzer_Tip_Tool, pos_y=15,theta_y=-130, off_z=-5), blocking=True) #go to off button
+#intermeidate point to avoid the tool holder
+UR5.MoveJ([85.45, -105, 80.20, -81.3, -90, -173.26])
+# Postion before unlocking scales
+UR5.MoveJ([32.000000, -74.474122, 109.506791, -123.352668, -90.000000, -87.500000])
+# Flipping Ranccilio Scale Switch
+UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=-10, pos_y=+25, pos_z=-25, theta_x = 180), blocking=True)
 
 
 
 
-# # #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the scale reports 20±0.1g of 
-# #          coffee grounds has been deposited in the Rancilio tool.
-# UR5.MoveJ([118.580000, -60.750000, 120.600000, -245.690000, -91.880000, -309.790000])
-# UR5.MoveL(tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool,theta_x=-200,theta_z=-50, off_x=0, off_z=40,off_y=-40,off_theta_z=40), blocking=True)
-# circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool,theta_x=-200,theta_z=-50, off_x=-10, off_z=0,off_y=-40,off_theta_z=40)
-# UR5.MoveL(circle_start_pose, blocking=True)
 
 
-# circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), 60, n_steps=1)
-# for pose in circular_path:
-#     print(circle_start_pose)
-#     print(pose)
-#     UR5.MoveC(circle_start_pose, pose)
-#     print()
-#     sleep(1)
+# UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=50,theta_x=-120), blocking=True)
+# print("move to above the lock")
+# UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=-5,theta_x=-120), blocking=True)
+# print("move to unlock the lock")
+# UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -20, pos_z=-5,theta_x=-120), blocking=True)
+# print("move to unlock the lock")
+# UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -15, pos_z=50,theta_x=-120), blocking=True)
+# print("move to above the lock")
 
-# #TODO m) Use the Mazzer tool to operate the cup dispenser.
-UR5.MoveJ([112.020000, -64.930000, 130.100000, -223.900000, -70.020000, 230.210000]) #another intermeidiate point so we dont hit the tool holder
-UR5.MoveJ([71.680000, -64.390000, 129.270000, -262.950000, -88.330000, 214.230000]) #another intermeidiate point so we dont hit the tool holder
-UR5.MoveJ([9.594445, -72.709382, 129.539942, -234.755204, -96.626572, 259.018886])
-UR5.MoveJ(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50), blocking=True)
-print("move to above the latch")
-time.sleep(1)
-UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool), blocking=True)
-print("into latch")
-time.sleep(1)
-UR5.MoveL(tf.pose(points_df, id.Cup_Open, tool=id.Mazzer_Tip_Tool), blocking=True)
-print("open") 
-time.sleep(1)
-UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool), blocking=True)
-print("close")
-time.sleep(1)
-UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50), blocking=True)
-print("move to above the latch")
-time.sleep(1)
-UR5.MoveJ([47.010000, -72.190000, 130.980000, -238.790000, -96.780000, 269.990000]) #another intermeidiate point so we dont hit the cup stack
+
+# #TODO c) Use the Mazzer tool to turn the Mazzer on, wait 15s, and turn the Mazzer off.
+# UR5.MoveJ([117.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) #intermeidate point to avoid the mazzer
+# time.sleep(1)
+# UR5.MoveJ(tf.pose(points_df, id.Mazzer_On_Button, tool=id.Mazzer_Tip_Tool, pos_y=10,theta_y=-110, off_z= -10), blocking=True) #go to on button
+# UR5.MoveJ(tf.pose(points_df, id.Mazzer_On_Button, tool=id.Mazzer_Tip_Tool, pos_y=10,theta_y=-110, off_z= 10), blocking=True) #push on button
+# the_time = time.time()
+# UR5.MoveJ(tf.pose(points_df, id.Mazzer_On_Button, tool=id.Mazzer_Tip_Tool, pos_y=10,theta_y=-110, off_z= -10), blocking=True) #go to on button
+# UR5.MoveJ(tf.pose(points_df, id.Mazzer_Off_Button, tool=id.Mazzer_Tip_Tool, pos_y=15,theta_y=-130, off_z=-3), blocking=True) #go to off button
+# time.sleep(1)
+# while (time.time() - the_time) < 1: # wait 15 secs
+#     print(f"Waited {time.time() - the_time:.1f} s")
+#     pass # do nothing
+# UR5.MoveJ(tf.pose(points_df, id.Mazzer_Off_Button, tool=id.Mazzer_Tip_Tool, pos_y=15,theta_y=-130, off_z= 3), blocking=True) #push off button
+# UR5.MoveJ(tf.pose(points_df, id.Mazzer_Off_Button, tool=id.Mazzer_Tip_Tool, pos_y=15,theta_y=-130, off_z=-5), blocking=True) #go to off button
+
+
+
+# # #TODO m) Use the Mazzer tool to operate the cup dispenser.
+# UR5.MoveJ([112.020000, -64.930000, 130.100000, -223.900000, -70.020000, 230.210000]) #another intermeidiate point so we dont hit the tool holder
+# UR5.MoveJ([71.680000, -64.390000, 129.270000, -262.950000, -88.330000, 214.230000]) #another intermeidiate point so we dont hit the tool holder
+# UR5.MoveJ([9.594445, -72.709382, 129.539942, -234.755204, -96.626572, 259.018886])
+# UR5.MoveJ(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50), blocking=True)
+# print("move to above the latch")
+# time.sleep(1)
+# UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool), blocking=True)
+# print("into latch")
+# time.sleep(1)
+# UR5.MoveL(tf.pose(points_df, id.Cup_Open, tool=id.Mazzer_Tip_Tool), blocking=True)
+# print("open") 
+# time.sleep(1)
+# UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool), blocking=True)
+# print("close")
+# time.sleep(1)
+# UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50), blocking=True)
+# print("move to above the latch")
+# time.sleep(1)
+# UR5.MoveJ([47.010000, -72.190000, 130.980000, -238.790000, -96.780000, 269.990000]) #another intermeidiate point so we dont hit the cup stack
 
 
 # put mazzer back away
-tls.mazzer_tool_detach_l_ati()
+# tls.mazzer_tool_detach_l_ati()
 # go back home
-UR5.MoveJ(RDK.Item("Home_L", ITEM_TYPE_TARGET), True)
+# UR5.MoveJ(RDK.Item("Home_L", ITEM_TYPE_TARGET), True)
 
