@@ -69,8 +69,21 @@ import transforms as tf
 # v. Return the Rancilio tool to the tool stand.
 
 
-#helper fcns
+#Visualize fcns
+def list_program_items(RDK):
+    # Returns Item objects, then call .Name()
+    prog_items = RDK.ItemList(ITEM_TYPE_PROGRAM, False)
+    for p in prog_items:
+        print(p.Name(), "(type", p.Type(), ")")
+    return prog_items
 
+def run_visual_program(RDK, name, blocking=True):
+    prog = RDK.Item(name, ITEM_TYPE_PROGRAM)
+    if not prog.Valid():
+        raise ValueError(f"Program '{name}' not found")
+    prog.RunCode()
+    if blocking:
+        prog.WaitFinished()
 
 
 RDK = Robolink()
@@ -79,10 +92,19 @@ UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
 mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
 if mazzer_scale.server_exists() == False:
-    RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+    if RUNMODE_SIMULATE:
+        print("Mazzer scale not detected, output will be simulated.")
+    else:
+        RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
 rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
 if mazzer_scale.server_exists() == False:
-    RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+    if RUNMODE_SIMULATE:
+        print("Rancilio scale not detected, output will be simulated.")
+    else:
+        RDK.ShowMessage("Rancilio scale not detected, output will be simulated.")
+
+mazzer_tool = RDK.Item("Mazzer_Tool_(UR5)", ITEM_TYPE_TOOL) 
+rancilio_tool = RDK.Item("Rancilio_Tool_(UR5)", ITEM_TYPE_TOOL) 
 
 
 #get all the frames
@@ -97,16 +119,19 @@ robot_program.RunCode()
 robot_program.WaitFinished()
 
 
+
 basket_drop_pose = tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_Indent, theta_y=90, theta_z=180, pos_z=-2)
 
 def A(): #TODO a) Pick up the Rancilio tool and place it on the Mazzer Scale pan.
-    # tls.rancilio_tool_attach_l_ati()
+    tls.rancilio_tool_attach_l_ati()
     UR5.MoveJ([107.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) 
     UR5.MoveJ([112.080000, -102.170000, 119.960000, -107.180000, -65.270000, -164.280000]) # re check these need some work 
     UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
     UR5.MoveJ(tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_Indent, theta_y=90, theta_z=180))
     UR5.MoveL(basket_drop_pose, blocking=True)
     tls.student_tool_detach()
+    run_visual_program(RDK, 'Show_Mazzer_Scale_Rancilio_Tool', blocking=True) #put the tool on the scales (visual) 
+    rancilio_tool.setVisible(False, False) #take the tool of the toolhead (visual)
     UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
 
 def B(): #TODO b) Use the Mazzer tool to unlock the Mazzer Scale.
@@ -136,28 +161,40 @@ def C(): #TODO c) Use the Mazzer tool to turn the Mazzer on, wait 15s, and turn 
 
 def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the scale reports 20±0.1g of coffee grounds has been deposited in the Rancilio tool.
     UR5.MoveJ(tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-190, off_x= 9, off_y= 30, off_z = -12))
-    circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-190, off_x= 8, off_y= 30, off_z = -7)
+    circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 8, off_y= 30, off_z = -7)
     UR5.MoveJ(circle_start_pose, blocking=True)
 
     circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=2)
 
     weight = 0
-    GROUNDS_WEIGHT_TARGET = 12
+    GROUNDS_WEIGHT_TARGET = 19.9
+    i = 0
     while weight <= GROUNDS_WEIGHT_TARGET:
+        i += 1
         # Forward movement
         UR5.MoveC(circular_path[1], circular_path[-1], blocking=False)
+        ii = 0
+        print(f"robot still moving {UR5.Busy()}")
         while UR5.Busy():
+            ii += 1
             weight = mazzer_scale.read()
+            print(f'weight {weight}, loop {i}.0{ii}')
             if weight >= GROUNDS_WEIGHT_TARGET:
                 UR5.Stop()
+                print('ohoh')
                 break
         if weight >= GROUNDS_WEIGHT_TARGET:
             break
+
+
         # weight += 7 # TODO remove
-        time.sleep(1)
+        time.sleep(0.5)
         UR5.MoveC(circular_path[1], circle_start_pose, blocking=False)
+        ii = 0
         while UR5.Busy():
+            ii += 1
             weight =  mazzer_scale.read()
+            print(f'weight {weight}, loop {i}.{ii}0')
             if weight >= GROUNDS_WEIGHT_TARGET:
                 UR5.Stop()
                 break
@@ -180,6 +217,9 @@ def F(): #TODO f) Remove the Rancilio tool from the Mazzer.
     UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
     UR5.MoveL(basket_drop_pose, blocking=True)
     tls.student_tool_attach()
+    run_visual_program(RDK, 'Hide_Mazzer_Scale_Rancilio_Tool', blocking=True) #dissapear the tool from the scales (visual)
+    rancilio_tool.setVisible(True,False) #put it on the toolhead (visual)
+
 
 
 above_wdt_pose = tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, off_x=-50)
@@ -191,9 +231,11 @@ def G(): #TODO g) Open the WDT fixture, and place the Rancilio tool into the WDT
     UR5.MoveL(above_wdt_pose, blocking=True)
     UR5.MoveL(wdt_pose, blocking=True)
 
-def H():
-# #TODO h) Release the Rancilio tool and close the WDT fixture.
+
+def H(): #TODO h) Release the Rancilio tool and close the WDT fixture.
     tls.student_tool_detach()
+    run_visual_program(RDK, 'Show_WDT_Rancilio_Tool', blocking=True) #the tool in the wdt (visual)
+    rancilio_tool.setVisible(False,False) #dissaper it from the toolhead (visual)
     tls.wdt_shut()
     UR5.MoveL(tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, off_z=50), blocking=True)
 
@@ -216,20 +258,22 @@ def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WD
     UR5.MoveL(tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, off_z=50), blocking=True)
     UR5.MoveL(wdt_pose, blocking=True)
     tls.student_tool_attach()
+    run_visual_program(RDK, 'Hide_WDT_Rancilio_Tool', blocking=True) #tool ouff the wdt (visual)
+    rancilio_tool.setVisible(True,False) #put it back on the toolhead (visual)
     UR5.MoveL(above_wdt_pose)
 
 
 
-# A()
+A()
 B()
 C()
 D()
-# E()
-# F()
-# G()
-# H()
-# I()
-# J()
+E()
+F()
+G()
+H()
+I()
+J()
 
 
 
