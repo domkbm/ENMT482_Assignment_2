@@ -30,6 +30,10 @@ from time import sleep
 from robodk.robolink import *
 import robodk.robomath as rm
 
+from robodk.robodialogs import *
+from modbus_scale_client import modbus_scale_client
+
+
 import tools
 import indices as id
 import transforms as tf
@@ -73,6 +77,13 @@ RDK = Robolink()
 RDK.setRunMode(RUNMODE_SIMULATE)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
+mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
+if mazzer_scale.server_exists() == False:
+    RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
+if mazzer_scale.server_exists() == False:
+    RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+
 
 #get all the frames
 points_df = tf.create_points_df()
@@ -128,7 +139,7 @@ def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the 
     circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-190, off_x= 8, off_y= 30, off_z = -7)
     UR5.MoveJ(circle_start_pose, blocking=True)
 
-    circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -60, n_steps=4)
+    circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=2)
 
     weight = 0
     GROUNDS_WEIGHT_TARGET = 12
@@ -136,17 +147,17 @@ def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the 
         # Forward movement
         UR5.MoveC(circular_path[1], circular_path[-1], blocking=False)
         while UR5.Busy():
-            weight = weight #TODO replace with call to check scales
+            weight = mazzer_scale.read()
             if weight >= GROUNDS_WEIGHT_TARGET:
                 UR5.Stop()
                 break
         if weight >= GROUNDS_WEIGHT_TARGET:
             break
-        weight += 7 # TODO remove
+        # weight += 7 # TODO remove
         time.sleep(1)
-        UR5.MoveC(circular_path[-2], circle_start_pose, blocking=False)
+        UR5.MoveC(circular_path[1], circle_start_pose, blocking=False)
         while UR5.Busy():
-            weight = weight #TODO replace with call to check scales
+            weight =  mazzer_scale.read()
             if weight >= GROUNDS_WEIGHT_TARGET:
                 UR5.Stop()
                 break
@@ -213,12 +224,12 @@ def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WD
 B()
 C()
 D()
-E()
-F()
-G()
-H()
-I()
-J()
+# E()
+# F()
+# G()
+# H()
+# I()
+# J()
 
 
 

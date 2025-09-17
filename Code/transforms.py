@@ -17,7 +17,7 @@ import indices as idx
 
 
 
-            
+
 
 def create_points_df(robot_name='robot_3', filepath='points.xlsx'):
     points_df = pd.read_excel(filepath, sheet_name=robot_name)
@@ -110,8 +110,6 @@ def create_points_df(robot_name='robot_3', filepath='points.xlsx'):
 
    
     return points_df
-
-  
 
 
 def get_global_frame(frame_df, frame_key):
@@ -241,7 +239,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
         return get_global_frame(frame_df, perant_key) * combined_ht * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)-off_theta_z]) # i dont like this but sure 
 
 
-def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=60, spin_tool = True):
+def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=2, spin_tool = True):
     """
     Generate a list of poses by rotating initial_pose around rot_c_pose along global Z axis.
 

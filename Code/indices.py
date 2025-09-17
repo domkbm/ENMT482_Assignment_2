@@ -40,6 +40,21 @@ Rancillio_Basket_Tool_Base = 63
 
 
 
+## IPv4 address of the Mazzer scale of robot 1.
+IP_MAZZER_1 = "192.168.20.3"
+## IPv4 address of the Mazzer scale of robot 2.
+IP_MAZZER_2 = "192.168.21.3"
+## IPv4 address of the Mazzer scale of robot 3.
+IP_MAZZER_3 = "192.168.22.3"
+
+## IPv4 address of the Rancilio scale of robot 1.
+IP_RANCILIO_1 = "192.168.20.4"
+## IPv4 address of the Rancilio scale of robot 2.
+IP_RANCILIO_2 = "192.168.21.4"
+## IPv4 address of the Rancilio scale of robot 3.
+IP_RANCILIO_3 = "192.168.22.4"
+
+
 
 # CD_Top_Cover_A = 1
 # CD_Top_Cover_B = 2

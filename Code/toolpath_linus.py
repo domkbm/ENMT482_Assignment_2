@@ -30,6 +30,9 @@ from time import sleep
 from robodk.robolink import *
 import robodk.robomath as rm
 
+from robodk.robodialogs import *
+from modbus_scale_client import modbus_scale_client
+
 import tools
 import indices as id
 import transforms as tf
@@ -83,6 +86,14 @@ RDK = Robolink()
 RDK.setRunMode(RUNMODE_SIMULATE)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
+mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
+if mazzer_scale.server_exists() == False:
+    RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
+if mazzer_scale.server_exists() == False:
+    RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+
+
 
 #get all the frames
 points_df = tf.create_points_df()
