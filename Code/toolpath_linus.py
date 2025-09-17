@@ -98,12 +98,13 @@ robot_program.WaitFinished()
 
 
 
-tls.mazzer_tool_attach_l_ati()
 
 
 # # PART O - Ready to Test
 
-# # intermeidate point to avoid the tool holder
+
+# tls.mazzer_tool_attach_l_ati()
+# # # intermeidate point to avoid the tool holder
 # UR5.MoveJ([85.45, -105, 80.20, -81.3, -90, -173.26])
 # # Postion before unlocking scales
 # UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5, pos_y=21.53, pos_z=0, theta_x = 180), blocking=True)
@@ -112,8 +113,7 @@ tls.mazzer_tool_attach_l_ati()
 
 
 
-# # PART P - Ready to Test
-
+# PART P - Ready to Test
 
 # UR5.MoveJ([16.840846, -94.755605, 114.632103, -26.459245, 35.176778, -42.243328])
 
@@ -137,29 +137,43 @@ tls.mazzer_tool_attach_l_ati()
 # UR5.MoveJ(tf.pose(points_df, id.Rancillio, tool=id.Mazzer_Tip_Tool, pos_x=48.6, pos_y=38.5, pos_z=-58.2, theta_y=-90, theta_z=180), blocking=True)
     
 
-# PART Q - Ready to Test
+# # PART Q - Ready to Test
 
-UR5.MoveJ([16.840846, -94.755605, 114.632103, -26.459245, 35.176778, -42.243328])
+# UR5.MoveJ([16.840846, -94.755605, 114.632103, -26.459245, 35.176778, -42.243328])
 
-# Postion before unlocking scales
-UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5, pos_y=21.53, pos_z=0, theta_x = 180), blocking=True)
-# Flipping Ranccilio Scale Switch
-UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+20, pos_y=+25, pos_z=-25, theta_x = 180), blocking=True)
+# # Postion before unlocking scales
+# UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5, pos_y=21.53, pos_z=0, theta_x = 180), blocking=True)
+# # Flipping Ranccilio Scale Switch
+# UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+20, pos_y=+25, pos_z=-25, theta_x = 180), blocking=True)
 
 
-UR5.MoveJ([47.523236, -108.009605, 95.271845, -77.263055, -90.000451, -89.608515])
+# UR5.MoveJ([47.523236, -108.009605, 95.271845, -77.263055, -90.000451, -89.608515])
 
-tls.mazzer_tool_detach_l_ati()
+# tls.mazzer_tool_detach_l_ati()
         
 
 # PART R - STARTED
-# tls.cup_tool_attach_l_ati()
+tls.cup_tool_attach_l_ati()
+UR5.MoveJ([-27.876872, -102.510321, 137.070438, -34.560117, 2.115252, -220.000000])
+tls.cup_tool_open_ur5()
+UR5.MoveJ(tf.pose(points_df, 41, tool=id.Cup_Closed_Tool, pos_z=70, theta_y=90, theta_x=180))
+time.sleep(1)
+tls.cup_tool_shut_ur5()
+UR5.MoveJ(tf.pose(points_df, 41, tool=id.Cup_Closed_Tool, pos_z=90, theta_y=90, theta_x=180))
+UR5.MoveJ([-27.876872, -102.510321, 137.070438, -34.560117, 2.115252, -220.000000])
+UR5.MoveJ([-79.840000, -102.510000, 137.070000, -34.560000, 2.110000, -219.990000])
+UR5.MoveJ([-44.935017, -83.445203, 119.313372, -35.868169, 37.014983, -219.990000])
+
+UR5.MoveJ([tf.pose(points_df, id.Customer, pos_z=20)])
+
+
+
 
 # Go to the cup approach postison
 
 # move to postion to pick up cup
 
-# Actuate Gripper
+# Actuate GripperS
 
 # Move cup up
 
