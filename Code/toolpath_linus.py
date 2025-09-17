@@ -176,6 +176,8 @@ def r(): #Use the cup tool to carefully pick up the cup of coffee and place it i
     # Go to the cup approach postison
 
     # move to postion to pick up cup
+    run_visual_program(RDK, 'Hide_Rancilio_Scale_Cup', blocking=True) #hide the cup on the scales
+
 
     # Actuate Gripper
 
@@ -189,6 +191,10 @@ def r(): #Use the cup tool to carefully pick up the cup of coffee and place it i
 
     # Pull Away
 
+
+
+def s(): # Remove the Rancilio tool from the group head.
+    
     # Move to twisted Rancillio tool aproach Postion
 
     # Go to tool
@@ -204,8 +210,6 @@ def r(): #Use the cup tool to carefully pick up the cup of coffee and place it i
     # Clean Tool
 
     # Put Away
-
-def s(): # Remove the Rancilio tool from the group head.
 
     #TODO go to the tool 
     tls.student_tool_attach()
