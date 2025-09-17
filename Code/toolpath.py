@@ -35,14 +35,12 @@ import indices as id
 import transforms as tf
 
 
-# TODO: start with tasks (b), (c) and (m)
 
 #DOM 
 # a. Pick up the Rancilio tool and place it on the Mazzer Scale pan.
 # b. Use the Mazzer tool to unlock the Mazzer Scale.
 # c. Use the Mazzer tool to turn the Mazzer on, wait 15s, and turn the Mazzer off.
-# d. Use the Mazzer tool to pull the Mazzer dosing lever until the scale reports 20±0.1g of
-# coffee grounds has been deposited in the Rancilio tool.
+# d. Use the Mazzer tool to pull the Mazzer dosing lever until the scale reports 20±0.1g of coffee grounds has been deposited in the Rancilio tool.
 # e. Use the Mazzer tool to lock the Mazzer Scale.
 # f. Remove the Rancilio tool from the Mazzer.
 # g. Open the WDT fixture, and place the Rancilio tool into the WDT fixture.
@@ -51,26 +49,20 @@ import transforms as tf
 # j. Open the WDT fixture, remove the Rancilio tool and close the WDT fixture.
 
 #Ollie
-# k. Place the Rancilio tool into the PUQ fixture, and wait 2 seconds while the machine
-# tamps the coffee grounds.
-# l. Remove the Rancilio tool from the PUQ fixture, and insert it into the Rancilio group
-# head.
+# k. Place the Rancilio tool into the PUQ fixture, and wait 2 seconds while the machine tamps the coffee grounds.
+# l. Remove the Rancilio tool from the PUQ fixture, and insert it into the Rancilio group head.
 # m. Use the Mazzer tool to operate the cup dispenser.
 # n. Use the cup tool to pick up the dispensed cup, and place it on the Rancilio Scale pan.
 
 #Lenny
 # o. Use the Mazzer tool to unlock the Rancilio Scale.
-# p. Use the Mazzer tool to operate the Rancilio hot water switch until the scale reports
-# 32±0.1g of water has been dispensed in the cup.
+# p. Use the Mazzer tool to operate the Rancilio hot water switch until the scale reports 32±0.1g of water has been dispensed in the cup.
 # q. Use the Mazzer tool to lock the Rancilio Scale.
 # r. Use the cup tool to carefully pick up the cup of coffee and place it in the customer zone.
 # s. Remove the Rancilio tool from the group head.
-# t. Position the Rancilio tool over the Rancilio Tool Cleaner fixture silicone brush, and
-# actuate for 5s.
-# u. Position the Rancilio tool over the Rancilio Tool Cleaner fixture bristle brush, and
-# actuate for 5s.
+# t. Position the Rancilio tool over the Rancilio Tool Cleaner fixture silicone brush, and actuate for 5s.
+# u. Position the Rancilio tool over the Rancilio Tool Cleaner fixture bristle brush, and actuate for 5s.
 # v. Return the Rancilio tool to the tool stand.
-
 
 
 #helper fcns

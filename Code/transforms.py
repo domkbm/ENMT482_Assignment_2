@@ -166,6 +166,17 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
     tool_off = robomath.invH(tool_off)
     if tool == None:
         tool_ht = TxyzRxyz_2_Pose([0,0,0,0,0,0])
+    elif tool == 55: #specal case for placing the basket of the rancillo on somthing
+        rotation_key = 63
+        rotation_row = frame_df.loc[frame_df['Key'] == rotation_key].iloc[0]
+        tool_ht = TxyzRxyz_2_Pose([
+            base_row['X'] - depth_row['X'],
+            base_row['Y'],
+            base_row['Z'],
+            base_row.get('Euler_Rx', 0), # + np.rad2deg(rotation_row)
+            base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row['X']),
+            base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
+        tool_ht = robomath.invH(tool_ht)    
     elif tool == 63: #specal case for placing the base of the rancillo on somthing
         base_key = 55 # basket
         rotation_key = 63# handle rotation
