@@ -178,7 +178,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
             base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
         tool_ht = robomath.invH(tool_ht)    
     elif tool == 63: #specal case for placing the base of the rancillo on somthing
-        base_key = 55 # basket
+        base_key = 55 # basket  
         rotation_key = 63# handle rotation
         depth_key = 64# depth
         base_row = frame_df.loc[frame_df['Key'] == base_key].iloc[0]
@@ -222,7 +222,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
         frame_row.get('Euler_Rx', 0),
         frame_row.get('Euler_Ry', 0),
         frame_row.get('Euler_Rz', 0)]
-    )
+    )  
  
     # Compute the transform of this frame relative to its parent
     combined_ht = frame_ht * local_ht
