@@ -30,8 +30,8 @@ from time import sleep
 from robodk.robolink import *
 import robodk.robomath as rm
 
-from robodk.robodialogs import *
-from modbus_scale_client import modbus_scale_client
+# from robodk.robodialogs import *
+# from modbus_scale_client import modbus_scale_client
 
 import tools
 import indices as id
@@ -99,12 +99,12 @@ RDK = Robolink()
 RDK.setRunMode(RUNMODE_SIMULATE)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
-mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
-if mazzer_scale.server_exists() == False:
-    RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
-rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
-if mazzer_scale.server_exists() == False:
-    RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+# mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
+# if mazzer_scale.server_exists() == False:
+#     RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+# rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
+# if mazzer_scale.server_exists() == False:
+#     RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
 
 #for visuals
 mazzer_tool = RDK.Item("Mazzer_Tool_(UR5)", ITEM_TYPE_TOOL) 
@@ -231,6 +231,7 @@ def v(): # Return the Rancilio tool to the tool stand.
 #calls
 tls.mazzer_tool_attach_l_ati()
 run_visual_program(RDK, 'Show_Rancilio_Scale_Cup', blocking=True) #show the cup on the scales 
+run_visual_program(RDK, 'Show_Rancilio_Rancilio_Tool_Rotated', blocking=True) #tool in the thing
 
 o()
 p()
