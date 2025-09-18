@@ -38,6 +38,7 @@ import tools
 import indices as id
 import transforms as tf
 
+GROUNDS_WEIGHT_TARGET = 19.9
 
 
 #DOM 
@@ -120,14 +121,14 @@ robot_program.WaitFinished()
 
 
 
-basket_drop_pose = tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_Indent, theta_y=90, theta_z=180, pos_z=-2)
+basket_drop_pose = tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_Indent, theta_y=90, theta_z=180, pos_z=-1)
 
 def A(): #TODO a) Pick up the Rancilio tool and place it on the Mazzer Scale pan.
     tls.rancilio_tool_attach_l_ati()
     UR5.MoveJ([107.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) 
     UR5.MoveJ([112.080000, -102.170000, 119.960000, -107.180000, -65.270000, -164.280000]) # re check these need some work 
     UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
-    UR5.MoveJ(tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_Indent, theta_y=90, theta_z=180))
+    UR5.MoveJ(tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_Indent, theta_y=90, theta_z=180, pos_z = 6))
     UR5.MoveL(basket_drop_pose, blocking=True)
     tls.student_tool_detach()
     run_visual_program(RDK, 'Show_Mazzer_Scale_Rancilio_Tool', blocking=True) #put the tool on the scales (visual) 
@@ -165,9 +166,8 @@ def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the 
     UR5.MoveJ(circle_start_pose, blocking=True)
 
     circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=2)
-
-    weight = 0
-    GROUNDS_WEIGHT_TARGET = 19.9
+    mazzer_scale.tare()
+    weight = mazzer_scale.read() #this is a bit weird but maby add a difrencing thing. 
     i = 0
     while weight <= GROUNDS_WEIGHT_TARGET:
         i += 1
@@ -203,13 +203,52 @@ def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the 
     #move up to let go of the lever
     UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,25,0,0,0]) * UR5.Pose(), blocking=True)
 
+def D_alt(): #blocking version
+    UR5.MoveJ(tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-190, off_x= 9, off_y= 30, off_z = -12))
+    circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 8, off_y= 30, off_z = -7)
+    UR5.MoveJ(circle_start_pose, blocking=True)
+
+    circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=20)
+    reversed_circular_path = circular_path.copy()
+    reversed_circular_path = list(reversed(reversed_circular_path))
+    reversed_circular_path.append(circle_start_pose)
+    reversed_circular_path = reversed_circular_path[1:]
+    mazzer_scale.tare()
+    weight = mazzer_scale.read()
+    weight_target = weight + GROUNDS_WEIGHT_TARGET # alt method
+    weight = 0
+    while weight < GROUNDS_WEIGHT_TARGET:
+
+        #move fwd
+        for pose in circular_path:
+            UR5.MoveL(pose)
+            weight = mazzer_scale.read()
+            if weight >= GROUNDS_WEIGHT_TARGET:
+                break
+
+        # weight += 20
+        if weight >= GROUNDS_WEIGHT_TARGET:
+            break
+            
+        #move back
+        for pose in reversed_circular_path:
+            UR5.MoveL(pose)
+            weight = mazzer_scale.read()
+            if weight >= GROUNDS_WEIGHT_TARGET:
+                break
+        if weight >= GROUNDS_WEIGHT_TARGET:
+            break
+        
+    UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,60,0,0,0]) * UR5.Pose(), blocking=True)
+    UR5.MoveJ([117.300000, -102.340000, 94.140000, -80.130000, -95.230000, -231.640000])
+        
 def E():# TODO e) Use the Mazzer tool to lock the Mazzer Scale.
     # UR5.MoveJ([117.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) #intermeidate point to avoid the mazzer
     # UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -10, pos_z=50,theta_x=-120, off_theta_z=180), blocking=True)
     # print("move to above the lock")
-    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -10, pos_z=6,theta_x=-120, off_theta_z=180), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -3, pos_z=8,theta_x=-120, off_theta_z=180), blocking=True)
     # print("down to unlock the lock")
-    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= 7, pos_z=-6,theta_x=-120, off_theta_z=180), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= 10, pos_z=-3,theta_x=-120, off_theta_z=180), blocking=True)
     # print("down and across to unlock the lock")
 
 def F(): #TODO f) Remove the Rancilio tool from the Mazzer.
@@ -219,6 +258,7 @@ def F(): #TODO f) Remove the Rancilio tool from the Mazzer.
     tls.student_tool_attach()
     run_visual_program(RDK, 'Hide_Mazzer_Scale_Rancilio_Tool', blocking=True) #dissapear the tool from the scales (visual)
     rancilio_tool.setVisible(True,False) #put it on the toolhead (visual)
+    UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,10,0,0,0]) * basket_drop_pose, blocking=True)
 
 
 
@@ -264,14 +304,15 @@ def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WD
 
 
 
+
 A()
-B()
-C()
-D()
-E()
-F()
-G()
-H()
-I()
-J()
+# B()
+# C()
+# D_alt() # or D()
+# E()
+# F()
+# G()
+# H()
+# I()
+# J()
 

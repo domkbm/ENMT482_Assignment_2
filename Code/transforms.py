@@ -138,7 +138,7 @@ def get_global_frame(frame_df, frame_key):
 
 def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x = 0, theta_y = 0, theta_z = 0, off_x = 0, off_y = 0, off_z = 0, off_theta_x = 0, off_theta_y = 0, off_theta_z = 0):
     """
-    Compute the global pose of a frame/tool by recursively walking up the frame hierarchy.
+    Compute the global pose of a frame/tool.
 
     Parameters:
         frame_key : int
@@ -182,14 +182,30 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
         base_row = frame_df.loc[frame_df['Key'] == base_key].iloc[0]
         rotation_row = frame_df.loc[frame_df['Key'] == rotation_key].iloc[0]
         depth_row = frame_df.loc[frame_df['Key'] == depth_key].iloc[0]
+        print((depth_row['X']))
+        print((rotation_row['X']))
         tool_ht = TxyzRxyz_2_Pose([
             base_row['X'] - depth_row['X'],
             base_row['Y'],
             base_row['Z'],
-            base_row.get('Euler_Rx', 0), # + np.rad2deg(rotation_row)
+            base_row.get('Euler_Rx', 0), 
             base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row['X']),
             base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
         tool_ht = robomath.invH(tool_ht)
+
+        # test = TxyzRxyz_2_Pose([
+        #     base_row['X'],
+        #     base_row['Y'],
+        #     base_row['Z'],
+        #     base_row.get('Euler_Rx', 0), 
+        #     base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row['X']),
+        #     base_row.get('Euler_Rz', 0)])
+        
+        # test = robomath.invH(test)
+        # test = test * TxyzRxyz_2_Pose([depth_row['X'],0,0, 0, 0, 0])
+
+        # print(tool_ht)
+        # print(test)
 
     else:
         tcp_key = tool
@@ -281,7 +297,6 @@ def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=2, sp
 if __name__ == "__main__":
     frames = create_points_df()
     mazzer = pose(frames, idx.WDT, tool=idx.Rancillio_Basket_Tool_Base)
-    print(mazzer)
     # on_button = pose(frames, idx.Mazzer_On_Button)
     # print(on_button)
     # # check1 = pose(frames, idx.Cup, tool=idx.Mazzer_Tool)
