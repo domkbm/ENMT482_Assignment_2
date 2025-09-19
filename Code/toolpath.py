@@ -260,10 +260,8 @@ def F(): #TODO f) Remove the Rancilio tool from the Mazzer.
     rancilio_tool.setVisible(True,False) #put it on the toolhead (visual)
     UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,10,0,0,0]) * basket_drop_pose, blocking=True)
 
-
-
-above_wdt_pose = tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, off_x=-50)
-wdt_pose = tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90)
+above_wdt_pose = tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, off_x=-50, pos_y = 1)
+wdt_pose = tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, pos_y = 1)
 
 def G(): #TODO g) Open the WDT fixture, and place the Rancilio tool into the WDT fixture.
     tls.wdt_open()
@@ -283,8 +281,9 @@ def I(): #TODO i) Use the Mazzer tool to turn the WDT rotor five full revolution
     REVOLUTIONS = 2
     tls.mazzer_tool_attach_l_ati()
     UR5.MoveL(tf.pose(points_df, id.WDT_Spinner, tool=id.Mazzer_Tip_Tool, theta_x=-180, off_z=20), blocking=True)
-    circle_start_pose = tf.pose(points_df, id.WDT_Spinner, tool=id.Mazzer_Tip_Tool, theta_x=-180, off_z=0)
+    circle_start_pose = tf.pose(points_df, id.WDT_Spinner, tool=id.Mazzer_Tip_Tool, theta_x=-180, off_z=6)
     UR5.MoveL(circle_start_pose, blocking=True)
+    time.sleep(10)
     circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.WDT), REVOLUTIONS*360, n_steps=REVOLUTIONS*4, spin_tool=False)
     for i in range(REVOLUTIONS): # do some spinnning
         UR5.MoveC(circular_path[4*i+1], circular_path[4*i+2], blocking=True)
@@ -306,13 +305,13 @@ def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WD
 
 
 A()
-# B()
-# C()
-# D_alt() # or D()
-# E()
-# F()
-# G()
-# H()
-# I()
-# J()
+B()
+C()
+D_alt() # or D()
+E()
+F()
+G()
+H()
+I()
+J()
 

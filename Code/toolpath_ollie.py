@@ -160,11 +160,17 @@ def n(): # Use the cup tool to pick up the dispensed cup, and place it on the Ra
     ##TODO put the cup on the scales
     run_visual_program(RDK, 'Show_Rancilio_Scale_Cup', blocking=True) #show the cup on the scales 
 
+
+
+
+
+tls.mazzer_tool_attach_l_ati()
+
 #task calls
-k()
-l()
+# k()
+# l()
 m()
-n()
+# n()
 
 
 # put mazzer back away
