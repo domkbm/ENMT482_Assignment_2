@@ -30,8 +30,8 @@ from time import sleep
 from robodk.robolink import *
 import robodk.robomath as rm
 
-from robodk.robodialogs import *
-from modbus_scale_client import modbus_scale_client
+# from robodk.robodialogs import *
+# from modbus_scale_client import modbus_scale_client
 
 
 import tools
@@ -125,15 +125,13 @@ basket_drop_pose = tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_In
 
 def A(): #TODO a) Pick up the Rancilio tool and place it on the Mazzer Scale pan.
     tls.rancilio_tool_attach_l_ati()
-    UR5.MoveJ([107.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) 
-    UR5.MoveJ([112.080000, -102.170000, 119.960000, -107.180000, -65.270000, -164.280000]) # re check these need some work 
-    UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
-    UR5.MoveJ(tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_Indent, theta_y=90, theta_z=180, pos_z = 6))
+    UR5.MoveJ([146.160000, -80.140000, 137.450000, -63.010000, 115.440000, -220])
+    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Ball, tool=id.Rancillio_Indent, theta_y=90, theta_z=180, pos_z = 6))
     UR5.MoveL(basket_drop_pose, blocking=True)
     tls.student_tool_detach()
     run_visual_program(RDK, 'Show_Mazzer_Scale_Rancilio_Tool', blocking=True) #put the tool on the scales (visual) 
     rancilio_tool.setVisible(False, False) #take the tool of the toolhead (visual)
-    UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
+    UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, -220])#intermeidate point to avoid the mazzer
 
 def B(): #TODO b) Use the Mazzer tool to unlock the Mazzer Scale.
     tls.mazzer_tool_attach_l_ati()
@@ -283,7 +281,6 @@ def I(): #TODO i) Use the Mazzer tool to turn the WDT rotor five full revolution
     UR5.MoveL(tf.pose(points_df, id.WDT_Spinner, tool=id.Mazzer_Tip_Tool, theta_x=-180, off_z=20), blocking=True)
     circle_start_pose = tf.pose(points_df, id.WDT_Spinner, tool=id.Mazzer_Tip_Tool, theta_x=-180, off_z=6)
     UR5.MoveL(circle_start_pose, blocking=True)
-    time.sleep(10)
     circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.WDT), REVOLUTIONS*360, n_steps=REVOLUTIONS*4, spin_tool=False)
     for i in range(REVOLUTIONS): # do some spinnning
         UR5.MoveC(circular_path[4*i+1], circular_path[4*i+2], blocking=True)
@@ -315,3 +312,4 @@ H()
 I()
 J()
 
+# 126.390000, -100.000000, 97.570000, 7.280000, 96.640000, 140.000000
