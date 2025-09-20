@@ -91,18 +91,18 @@ RDK = Robolink()
 RDK.setRunMode(RUNMODE_SIMULATE)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
-mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
-if mazzer_scale.server_exists() == False:
-    if RUNMODE_SIMULATE:
-        print("Mazzer scale not detected, output will be simulated.")
-    else:
-        RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
-rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
-if mazzer_scale.server_exists() == False:
-    if RUNMODE_SIMULATE:
-        print("Rancilio scale not detected, output will be simulated.")
-    else:
-        RDK.ShowMessage("Rancilio scale not detected, output will be simulated.")
+# mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
+# if mazzer_scale.server_exists() == False:
+#     if RUNMODE_SIMULATE:
+#         print("Mazzer scale not detected, output will be simulated.")
+#     else:
+#         RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+# rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
+# if mazzer_scale.server_exists() == False:
+#     if RUNMODE_SIMULATE:
+#         print("Rancilio scale not detected, output will be simulated.")
+#     else:
+#         RDK.ShowMessage("Rancilio scale not detected, output will be simulated.")
 
 mazzer_tool = RDK.Item("Mazzer_Tool_(UR5)", ITEM_TYPE_TOOL) 
 rancilio_tool = RDK.Item("Rancilio_Tool_(UR5)", ITEM_TYPE_TOOL) 
@@ -135,7 +135,7 @@ def A(): #TODO a) Pick up the Rancilio tool and place it on the Mazzer Scale pan
 
 def B(): #TODO b) Use the Mazzer tool to unlock the Mazzer Scale.
     tls.mazzer_tool_attach_l_ati()
-    UR5.MoveJ([117.580000, -93.770000, 117.650000, -113.010000, -89.130000, -204.190000]) #intermeidate point to avoid the mazzer
+    UR5.MoveJ([117.580000, -93.770000, 117.650000, -113.010000, -89.130000, -220]) #intermeidate point to avoid the mazzer
     UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -10, pos_z=50,theta_x=-120,off_theta_z=150), blocking=True)
     # print("move to above the lock")
     UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -10, pos_z=4,theta_x=-120,off_theta_z=150), blocking=True)
@@ -199,7 +199,7 @@ def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the 
         if weight >= GROUNDS_WEIGHT_TARGET:
             break
     #move up to let go of the lever
-    UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,25,0,0,0]) * UR5.Pose(), blocking=True)
+    UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,60,0,0,0]) * UR5.Pose(), blocking=True)
 
 def D_alt(): #blocking version
     UR5.MoveJ(tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-190, off_x= 9, off_y= 30, off_z = -12))
@@ -256,7 +256,7 @@ def F(): #TODO f) Remove the Rancilio tool from the Mazzer.
     tls.student_tool_attach()
     run_visual_program(RDK, 'Hide_Mazzer_Scale_Rancilio_Tool', blocking=True) #dissapear the tool from the scales (visual)
     rancilio_tool.setVisible(True,False) #put it on the toolhead (visual)
-    UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,10,0,0,0]) * basket_drop_pose, blocking=True)
+    UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,25,0,0,0]) * basket_drop_pose, blocking=True)
 
 above_wdt_pose = tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, off_x=-50, pos_y = 1)
 wdt_pose = tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, pos_y = 1)
@@ -311,5 +311,3 @@ G()
 H()
 I()
 J()
-
-# 126.390000, -100.000000, 97.570000, 7.280000, 96.640000, 140.000000
