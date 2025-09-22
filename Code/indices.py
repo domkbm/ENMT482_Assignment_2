@@ -22,6 +22,7 @@ Rancillio_Switch = 37
 Rancillio_Gasket = 38
 Rancillio_Scale = 12
 WDT = 14
+WDT_Spinner = 46
 Tool_Cleaner = 56
 Customer = 62
 
@@ -34,8 +35,24 @@ Mazzer_Bar_Tool = 52
 Rancillio_Tool = 53
 Rancillio_Indent = 54
 Rancillio_Basket_Tool = 55
+Rancillio_Basket_Tool_Base = 63
 
 
+
+
+## IPv4 address of the Mazzer scale of robot 1.
+IP_MAZZER_1 = "192.168.20.3"
+## IPv4 address of the Mazzer scale of robot 2.
+IP_MAZZER_2 = "192.168.21.3"
+## IPv4 address of the Mazzer scale of robot 3.
+IP_MAZZER_3 = "192.168.22.3"
+
+## IPv4 address of the Rancilio scale of robot 1.
+IP_RANCILIO_1 = "192.168.20.4"
+## IPv4 address of the Rancilio scale of robot 2.
+IP_RANCILIO_2 = "192.168.21.4"
+## IPv4 address of the Rancilio scale of robot 3.
+IP_RANCILIO_3 = "192.168.22.4"
 
 
 

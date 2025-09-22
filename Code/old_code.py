@@ -1,5 +1,37 @@
 
-                local_norms = np.linalg.norm(local_vectors, axis=1,keepdims=True)
+while weight <= weight_target:
+    # Forward movement
+    i = j = 0
+    for pose in circular_path:
+        i += 1
+        print(f"fwrd, step {i} weight {weight}")
+        UR5.MoveL(pose, blocking=True)     
+        weight += 7/60  # increment weight after each move
+        if weight > weight_target:
+            break  # exit the for loop if weight exceeded
+    if weight > weight_target:
+        break  # exit the while loop if weight exceeded
+    # Backward movement
+    i = j = 0
+    for pose in reversed(circular_path):
+        j += 1
+        print(f"back, step {j} weight {weight}")
+        UR5.MoveL(pose, blocking=True)
+        weight = weight  # increment weight after each move
+        if weight > weight_target:
+            break
+    if weight > weight_target:
+        break
+
+if i == 0:
+    UR5.MoveL(rm.TxyzRxyz_2_Pose([0,0,20,0,0,0]) * circular_path[len(circular_path) - j])
+elif j==0:
+    UR5.MoveL(rm.TxyzRxyz_2_Pose([0,0,20,0,0,0]) * circular_path[i])
+else: 
+    pass     
+
+
+local_norms = np.linalg.norm(local_vectors, axis=1,keepdims=True)
                 local_norms[local_norms == 0] = 1 
                 local_norms = local_vectors / local_norms
                 global_norms = np.linalg.norm(global_vectors, axis=1,keepdims=True)
