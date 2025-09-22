@@ -162,6 +162,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
     off_theta_z = np.deg2rad(off_theta_z)
     tool_off = TxyzRxyz_2_Pose([off_x,off_y,off_z,0,0,0])
     tool_off = robomath.invH(tool_off)
+
     if tool == None:
         tool_ht = TxyzRxyz_2_Pose([0,0,0,0,0,0])
     elif tool == 55: #specal case for placing the basket of the rancillo on somthing
@@ -256,105 +257,8 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
         return get_global_frame(frame_df, perant_key) * combined_ht * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)-off_theta_z]) # i dont like this but sure 
 
 
-# def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x = 0, theta_y = 0, theta_z = 0, off_x = 0, off_y = 0, off_z = 0, off_theta_x = 0, off_theta_y = 0, off_theta_z = 0):
-#     """
-#     Compute the global pose of a frame/tool.
-
-#     Parameters:
-#         frame_key : int
-#             The key of the desired frame in points_df 
-#         tool : int
-#             The key of the desired tool in points_f
-#         pos_x, pos_y, pos_z : float
-#             Local position relative to the frame (mm)
-#         theta_x, theta_y, theta_z : float (deg)
-#             Local rotation relative to the frame
-#         off_x,off_y,off_z
-#             Experiemental tool translations, probs olny for mazzer (dont use these atm)    
-#     Returns:
-#         4x4 np.ndarray : global homogeneous transformation matrix
-#     """
-#     theta_x = np.deg2rad(theta_x)
-#     theta_y = np.deg2rad(theta_y)
-#     theta_z = np.deg2rad(theta_z)
-#     off_theta_x = np.deg2rad(off_theta_x)
-#     off_theta_y = np.deg2rad(off_theta_y)
-#     off_theta_z = np.deg2rad(off_theta_z)
-#     tool_off = TxyzRxyz_2_Pose([off_x,off_y,off_z,0,0,0])
-#     tool_off = robomath.invH(tool_off)
-#     if tool == None:
-#         tool_ht = TxyzRxyz_2_Pose([0,0,0,0,0,0])
-#     elif tool == 55: #specal case for placing the basket of the rancillo on somthing
-#         rotation_key = 63
-#         rotation_row = frame_df.loc[frame_df['Key'] == rotation_key].iloc[0]
-#         tool_ht = TxyzRxyz_2_Pose([
-#             base_row['X'] - depth_row['X'],
-#             base_row['Y'],
-#             base_row['Z'],
-#             base_row.get('Euler_Rx', 0), # + np.rad2deg(rotation_row)
-#             base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row['X']),
-#             base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
-#         tool_ht = robomath.invH(tool_ht)    
-#     elif tool == 63: #specal case for placing the base of the rancillo on somthing
-#         base_key = 55 # basket  
-#         rotation_key = 63# handle rotation
-#         depth_key = 64# depth
-#         base_row = frame_df.loc[frame_df['Key'] == base_key].iloc[0]
-#         rotation_row = frame_df.loc[frame_df['Key'] == rotation_key].iloc[0]
-#         depth_row = frame_df.loc[frame_df['Key'] == depth_key].iloc[0]
-#         print((depth_row['X']))
-#         print((rotation_row['X']))
-#         tool_ht = TxyzRxyz_2_Pose([
-#             base_row['X'] - depth_row['X'],
-#             base_row['Y'],
-#             base_row['Z'],
-#             base_row.get('Euler_Rx', 0), 
-#             base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row['X']),
-#             base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
-#         tool_ht = robomath.invH(tool_ht)
 
 
-#     else:
-#         tcp_key = tool
-#         tool_row = frame_df.loc[frame_df['Key'] == tcp_key].iloc[0]
-#         tool_ht = TxyzRxyz_2_Pose([
-#         tool_row['X'],
-#         tool_row['Y'],
-#         tool_row['Z'],
-#         tool_row.get('Euler_Rx', 0),
-#         tool_row.get('Euler_Ry', 0),
-#         tool_row.get('Euler_Rz', 0) ]) #- np.deg2rad(50)
-#         tool_ht = robomath.invH(tool_ht)
-
-    
-#     # Local transform of the robot in this frame
-#     local_ht = TxyzRxyz_2_Pose([pos_x, pos_y, pos_z, theta_x, theta_y, theta_z])
-
-#     frame_row = frame_df.loc[frame_df['Key'] == frame_key].iloc[0]
-#     frame_ht = TxyzRxyz_2_Pose([
-#         frame_row['X'],
-#         frame_row['Y'],
-#         frame_row['Z'],
-#         frame_row.get('Euler_Rx', 0),
-#         frame_row.get('Euler_Ry', 0),
-#         frame_row.get('Euler_Rz', 0)]
-#     )  
- 
-#     # Compute the transform of this frame relative to its parent
-#     combined_ht = frame_ht * local_ht
-       
-#     if frame_row['Origin'] == 'yes': # This is an orgin in world co-ords, end of the line.
-#         return combined_ht * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,0]) # i dont like this but sure 
-#     else:
-#         # nothing is defined under two local transforms so not really nessesary to do recursive (readibility) to compute the parent global transform
-#         perant_rows = frame_df[
-#                 (frame_df['Fixture'] == frame_row['Fixture'])
-#                 & (frame_df['Frame'] == 'world')
-#                 & (frame_df['Origin'].str.lower() == 'yes')
-#             ]
-    
-#         perant_key = perant_rows.iloc[0]['Key']
-#         return get_global_frame(frame_df, perant_key) * combined_ht * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,0]) # i dont like this but sure 
 
 
 
