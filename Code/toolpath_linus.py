@@ -31,7 +31,7 @@ from robodk.robolink import *
 import robodk.robomath as rm
 
 # from robodk.robodialogs import *
-# from modbus_scale_client import modbus_scale_client
+from modbus_scale_client import modbus_scale_client
 
 import tools
 import indices as id
@@ -99,12 +99,12 @@ RDK = Robolink()
 RDK.setRunMode(RUNMODE_SIMULATE)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
-# mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
-# if mazzer_scale.server_exists() == False:
-#     RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
-# rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
-# if mazzer_scale.server_exists() == False:
-#     RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
+if mazzer_scale.server_exists() == False:
+    RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
+if mazzer_scale.server_exists() == False:
+    RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
 
 #for visuals
 mazzer_tool = RDK.Item("Mazzer_Tool_(UR5)", ITEM_TYPE_TOOL) 
@@ -151,11 +151,12 @@ def p(): # Use the Mazzer tool to operate the Rancilio hot water switch until th
     time.sleep(1)
 
     weight = 0
+    rancilio_scale.tare()
+    print("Tared Scale")
     TIMEOUT = 0
     while (weight >= CORRECT_WEIGHT or TIMEOUT):
-        # do weight thing
-        time.sleep(5)
-        break
+        weight = rancilio_scale.read()
+        print(f"Current Weight: {weight}g")
 
     # Press Button
     UR5.MoveJ(tf.pose(points_df, 37, tool=id.Mazzer_Tip_Tool,  pos_x = -10, pos_z = -5, theta_x=0, theta_y=-90, theta_z=180), blocking=True)
@@ -188,6 +189,9 @@ def r(): #Use the cup tool to carefully pick up the cup of coffee and place it i
 
     UR5.MoveJ([-12.610000, -84.600000, 85.520000, -47.500000, -49.240000, -237.820000])
 
+
+    UR5.MoveJ([-19.707119, -76.641261, 109.989813, -33.348552, -13.507119, -220.000000])
+
     UR5.MoveJ([-4.200000, -69.840000, 100.680000, -30.840000, -5.500000, -220.000000])
     
     tls.cup_tool_open_ur5()
@@ -205,39 +209,45 @@ def r(): #Use the cup tool to carefully pick up the cup of coffee and place it i
     UR5.MoveJ([-23.810000, -69.840000, 100.680000, -30.830000, -40.610000, -220.000000])
     UR5.MoveJ([-48.776840, -113.520569, 142.795718, -28.628641, -0.576878, -220.638884])
 
-    # TODO: PUT IN CUSTOMER ZONE 
+    # TODO: PUT IN ACTUAL CUSTOMER ZONE 
+
+
+    UR5.MoveJ([-91.050000, -103.009341, 149.874189, -46.214849, -0.570000, -220.630000])
+
+    tls.cup_tool_open_ur5()
+
+    UR5.MoveJ([-121.815757, -119.327302, 147.901424, -28.561688, -31.335721, -219.990653])
+    tls.cup_tool_shut_ur5()
+    UR5.MoveJ([-121.815757, -126.554662, 119.721341, 6.845755, -31.335721, -219.990653])
+
+    tls.cup_tool_detach_l_ati()
+
+
+
 
     # UR5.MoveJ([-31.775840, -103.210724, 136.605765, -33.372442, 70.684154, -220.003635])
     # UR5.MoveJ([-7.832033, -90.038617, 125.425880, -35.345083, 149.627951, -219.959768])
-    # UR5.MoveJ(tf.pose(points_df, id.Customer, tool=id.Cup_Closed_Tool, theta_y=90, theta_z=-90), blocking=True)
+    # UR5.MoveJ(tf.pose(points_df, id.Customer, tool=id.Cup_Closed_Tool, theta_y= 70, theta_x=90, theta_z=90), blocking=False)
 
-    tls.cup_tool_detach_l_ati()
 
     # Pull Away
 
 def s(): # Remove the Rancilio tool from the group head.
     
     # tls.rancilio_tool_attach_l_ati()
-    UR5.MoveJ([42.109253, -95.512633, 140.361378, -46.587357, -257.904029, -220.364433])
+    UR5.MoveJ([24.744220, -85.109034, 125.337227, -42.040277, -290.254345, -219.372494])
     print("approach postion")
 
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-15, theta_x= 90, theta_z=90), blocking=True)
+
     tls.student_tool_attach()
     run_visual_program(RDK, 'Hide_Rancilio_Rancilio_Tool_Rotated', blocking=True) #hide the tool on the machine
     rancilio_tool.setVisible(True,False) #show it on the toolhead (visual)
 
-    # fill with a circular move to remove the basket
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90), blocking=True)
 
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90, pos_z= -20), blocking=True)
     UR5.MoveJ([42.109253, -95.512633, 140.361378, -46.587357, -257.904029, -220.364433])
-
-    #TODO go to the tool 
-
-    # tls.student_tool_attach()
-    # run_visual_program(RDK, 'Hide_Rancilio_Rancilio_Tool_Rotated', blocking=True) #hide the tool on the machine
-    # rancilio_tool.setVisible(True,False) #show it on the toolhead (visual)
-    pass
 
 def t(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture silicone brush, and actuate for 5s.
 
@@ -252,30 +262,19 @@ def t(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture sil
 
     UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool_Base, pos_z = 20, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
 
-# READY
-
 def u(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture bristle brush, and actuate for 5s.
     UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool_Base, pos_z = 20, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
     UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool_Base, pos_z = -10, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
     time.sleep(5) #actuate for 5s
 
-# READY
-
 def v(): # Return the Rancilio tool to the tool stand.
     UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool_Base, pos_z = 100, pos_y=100, theta_z=-90, theta_x=90), blocking=True)
     tls.rancilio_tool_detach_l_ati()
-
  
 #calls
 # tls.mazzer_tool_attach_l_ati()
 run_visual_program(RDK, 'Show_Rancilio_Scale_Cup', blocking=True) #show the cup on the scales 
 run_visual_program(RDK, 'Show_Rancilio_Rancilio_Tool_Rotated', blocking=True) #tool in the thing
-
-
-
-
-
-
 
 o()
 p()
@@ -287,6 +286,5 @@ u()
 v()
 
 
-# tls.mazzer_tool_detach_l_ati()
 # go back home
-# UR5.MoveJ(RDK.Item("Home_L", ITEM_TYPE_TARGET), True)
+UR5.MoveJ(RDK.Item("Home_L", ITEM_TYPE_TARGET), True)
