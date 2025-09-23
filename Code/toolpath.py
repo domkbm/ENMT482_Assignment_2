@@ -173,6 +173,8 @@ def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the 
         UR5.MoveC(circular_path[1], circular_path[-1], blocking=False)
         ii = 0
         print(f"robot still moving {UR5.Busy()}")
+
+        
         while UR5.Busy():
             ii += 1
             weight = mazzer_scale.read()
