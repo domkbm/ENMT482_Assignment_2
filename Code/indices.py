@@ -25,6 +25,7 @@ WDT = 14
 WDT_Spinner = 46
 Tool_Cleaner = 56
 Customer = 62
+GroupGasket_Centre = 38
 
 Cup_Tool = 47
 Cup_Open_Tool = 48
