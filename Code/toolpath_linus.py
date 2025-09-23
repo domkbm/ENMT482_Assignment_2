@@ -124,11 +124,10 @@ robot_program.WaitFinished()
 #get all the frames
 points_df = tf.create_points_df()
 
-# ranc_in_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-15, theta_x= 90, theta_z=90, pos_z= 10)
 
-# ranc_mid_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-30, theta_x= 90, theta_z=90)
-
-# ranc_out_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90)
+# -------------------------------------------------------------------------------------------
+# ----------POSES and Helper functions for Rancilio Tool Spin -------------------------------
+# -------------------------------------------------------------------------------------------
 
 spin_start_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=45)
 arc = tf.generate_circular_path(spin_start_pose, tf.pose(points_df, id.Rancillio_Gasket), 30)
@@ -139,15 +138,14 @@ def basket_spin_fwd():
     UR5.MoveL(spin_start_pose)
     UR5.MoveC(arc[1], arc[2])
 
-
-
 def basket_spin_bkwd():
     # UR5.MoveL(spin_end_pose) # if coming from somwhere else
     UR5.MoveC(arc[1], spin_start_pose)
     UR5.MoveL(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=-15, theta_y=-90, off_theta_x=45))
 
-
-#each step (so you can turn them off quick)
+# --------------------------------------------------------------------------------------------
+# ----------Installation of Rancilio Tool ----------------------------------------------------
+# --------------------------------------------------------------------------------------------
 
 def install_rancilio_tool():
 
@@ -164,6 +162,9 @@ def install_rancilio_tool():
     rancilio_tool.setVisible(False, True) #show it on the toolhead (visual)
     UR5.MoveJ([24.744220, -85.109034, 125.337227, -42.040277, -290.254345, -219.372494])
 
+# --------------------------------------------------------------------------------------------
+# ----------Tool Paths -----------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------
 
 
 def o(): # Use the Mazzer tool to unlock the Rancilio Scale.
@@ -177,10 +178,6 @@ def o(): # Use the Mazzer tool to unlock the Rancilio Scale.
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5, pos_y=21.53, pos_z=0, theta_x = 125), blocking=True)
     # Flipping Ranccilio Scale Switch
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5-20, pos_y=21.53, pos_z=-25, theta_x = 125), blocking=True)
-
-
-
-
 
 def p(): # Use the Mazzer tool to operate the Rancilio hot water switch until the scale reports 32±0.1g of water has been dispensed in the cup.
 
@@ -233,7 +230,7 @@ def s(): # Remove the Rancilio tool from the group head.
     UR5.MoveJ([24.744220, -85.109034, 125.337227, -42.040277, -290.254345, -219.372494])
     print("approach postion")
 
-    # UR5.MoveJ(spin_end_pose, blocking=True)
+    UR5.MoveJ(spin_end_pose, blocking=True)
 
     tls.student_tool_attach()
     run_visual_program(RDK, 'Hide_Rancilio_Rancilio_Tool_Rotated', blocking=True) #hide the tool on the machine
@@ -244,8 +241,6 @@ def s(): # Remove the Rancilio tool from the group head.
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90, pos_z= -20), blocking=True)
     UR5.MoveJ([42.109253, -95.512633, 140.361378, -46.587357, -257.904029, -220.364433])
 
-
-
 def t(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture silicone brush, and actuate for 5s.
 
     rancilio_tool.setVisible(True,False) #show it on the toolhead (visual)
@@ -253,10 +248,9 @@ def t(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture sil
     UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool_Base, pos_z = 100, pos_y=0, theta_z=90, theta_x=90), blocking=True)
 
     # HOW DO I FIX THIS - WORKS IN SIM BUT NOT IRL
-    UR5.MoveJ([255.523985, -89.827300, 244.115491, -152.335524, -104.179408, -219.100081+180])
+    UR5.MoveL([255.520000, -89.820000, 244.110000, -152.330000, -104.170000, -40.620000], blocking=True)
 
-
-    # UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool_Base, pos_z = -10, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool_Base, pos_z = -10, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
     time.sleep(5) #actuate for 5s
 
 
@@ -267,11 +261,9 @@ def u(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture bri
     UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool_Base, pos_z = -10, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
     time.sleep(5) #actuate for 5s
 
-
 def v(): # Return the Rancilio tool to the tool stand.
     UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool_Base, pos_z = 100, pos_y=100, theta_z=-90, theta_x=90), blocking=True)
     tls.rancilio_tool_detach_l_ati()
-
 
 def r(): #Use the cup tool to carefully pick up the cup of coffee and place it in the customer zone.
     # PART R - STARTED
@@ -316,17 +308,14 @@ run_visual_program(RDK, 'Show_Rancilio_Rancilio_Tool_Rotated', blocking=True) #t
 
 
 install_rancilio_tool()
-# o()
-# p()
-# q()
+o()
+p()
+q()
 s()
-# t()
-# u()
-# v()
-
-
-# # Note r is done last
-# r() 
+t()
+u()
+v()
+r() 
 
 
 # go back home
