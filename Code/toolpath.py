@@ -91,18 +91,18 @@ RDK = Robolink()
 RDK.setRunMode(RUNMODE_SIMULATE)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
-mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
-if mazzer_scale.server_exists() == False:
-    if RUNMODE_SIMULATE:
-        print("Mazzer scale not detected, output will be simulated.")
-    else:
-        RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
-rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
-if mazzer_scale.server_exists() == False:
-    if RUNMODE_SIMULATE:
-        print("Rancilio scale not detected, output will be simulated.")
-    else:
-        RDK.ShowMessage("Rancilio scale not detected, output will be simulated.")
+# mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
+# if mazzer_scale.server_exists() == False:
+#     if RUNMODE_SIMULATE:
+#         print("Mazzer scale not detected, output will be simulated.")
+#     else:
+#         RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+# rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
+# if mazzer_scale.server_exists() == False:
+#     if RUNMODE_SIMULATE:
+#         print("Rancilio scale not detected, output will be simulated.")
+#     else:
+#         RDK.ShowMessage("Rancilio scale not detected, output will be simulated.")
 
 mazzer_tool = RDK.Item("Mazzer_Tool_(UR5)", ITEM_TYPE_TOOL) 
 rancilio_tool = RDK.Item("Rancilio_Tool_(UR5)", ITEM_TYPE_TOOL) 
@@ -301,6 +301,25 @@ def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WD
 
 
 
+
+####HELPER FCNS TO SPIN THE BASKET IN THE MACHINE#####
+spin_start_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=45)
+arc = tf.generate_circular_path(spin_start_pose, tf.pose(points_df, id.Rancillio_Gasket), 45)
+spin_end_pose = arc[-1]
+def basket_spin_fwd():
+    UR5.MoveL(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=-15, theta_y=-90, off_theta_x=45))
+    UR5.MoveL(spin_start_pose)
+    UR5.MoveC(arc[1], arc[2])
+
+def basket_spin_bkwd():
+    # UR5.MoveL(spin_end_pose) # if coming from somwhere else
+    UR5.MoveC(arc[1], spin_start_pose)
+    UR5.MoveL(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=-15, theta_y=-90, off_theta_x=45))
+
+
+
+
+
 A()
 B()
 C()
@@ -311,3 +330,8 @@ G()
 H()
 I()
 J()
+
+# tls.rancilio_tool_attach_l_ati()
+# UR5.MoveJ([32.440000, -84.510000, 131.920000, -49.900000, 52.850000, 141.770000])
+# basket_spin_fwd()
+# basket_spin_bkwd()

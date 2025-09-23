@@ -160,15 +160,17 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
     off_theta_x = np.deg2rad(off_theta_x)
     off_theta_y = np.deg2rad(off_theta_y)
     off_theta_z = np.deg2rad(off_theta_z)
-    tool_off = TxyzRxyz_2_Pose([off_x,off_y,off_z,0,0,0])
+    tool_off = TxyzRxyz_2_Pose([off_x,off_y,off_z,off_theta_x,0,0])
     tool_off = robomath.invH(tool_off)
     if tool == None:
         tool_ht = TxyzRxyz_2_Pose([0,0,0,0,0,0])
     elif tool == 55: #specal case for placing the basket of the rancillo on somthing
+        base_key = tool
+        base_row = frame_df.loc[frame_df['Key'] == base_key].iloc[0]
         rotation_key = 63
         rotation_row = frame_df.loc[frame_df['Key'] == rotation_key].iloc[0]
         tool_ht = TxyzRxyz_2_Pose([
-            base_row['X'] - depth_row['X'],
+            base_row['X'],
             base_row['Y'],
             base_row['Z'],
             base_row.get('Euler_Rx', 0), # + np.rad2deg(rotation_row)
@@ -193,20 +195,6 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
             base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
         tool_ht = robomath.invH(tool_ht)
 
-        # test = TxyzRxyz_2_Pose([
-        #     base_row['X'],
-        #     base_row['Y'],
-        #     base_row['Z'],
-        #     base_row.get('Euler_Rx', 0), 
-        #     base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row['X']),
-        #     base_row.get('Euler_Rz', 0)])
-        
-        # test = robomath.invH(test)
-        # test = test * TxyzRxyz_2_Pose([depth_row['X'],0,0, 0, 0, 0])
-
-        # print(tool_ht)
-        # print(test)
-
     else:
         tcp_key = tool
         tool_row = frame_df.loc[frame_df['Key'] == tcp_key].iloc[0]
@@ -218,10 +206,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
         tool_row.get('Euler_Ry', 0),
         tool_row.get('Euler_Rz', 0) ]) #- np.deg2rad(50)
         tool_ht = robomath.invH(tool_ht)
-        # print(f"TOOL Row {tool_row}")
-        # print(f"tool pose {tool_row['X'],tool_row['Y'],tool_row['Z'],}")
-        # print(f"TOOL HT {tool_ht}")
-    
+
     # Local transform of the robot in this frame
     local_ht = TxyzRxyz_2_Pose([pos_x, pos_y, pos_z, theta_x, theta_y, theta_z])
     
@@ -252,7 +237,7 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
             ]
     
         perant_key = perant_rows.iloc[0]['Key']
-        return get_global_frame(frame_df, perant_key) * combined_ht * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)-off_theta_z]) # i dont like this but sure 
+        return get_global_frame(frame_df, perant_key) * combined_ht  * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)-off_theta_z]) # i dont like this but sure 
 
 
 def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=2, spin_tool = True):
