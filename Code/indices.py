@@ -38,6 +38,7 @@ Rancillio_Indent = 54
 Rancillio_Basket_Tool = 55
 Rancillio_Basket_Tool_Base = 63
 
+Rancillio_Scale_Centre = 41
 
 
 
@@ -97,7 +98,7 @@ IP_RANCILIO_3 = "192.168.22.4"
 # GroupGasket_Centre = 38
 # MS_Top_Cover_Fastener_Left = 39
 # MS_Top_Cover_Fastener_Right = 40
-# RS_Pan_Centre = 41
+
 # MS_Lock_Lever_Left = 42
 # MS_Lock_Lever_Right = 43
 # DT_Anvil_Face_Centre = 44
