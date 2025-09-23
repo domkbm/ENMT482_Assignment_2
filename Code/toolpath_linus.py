@@ -118,8 +118,31 @@ robot_program.WaitFinished()
 #get all the frames
 points_df = tf.create_points_df()
 
+ranc_in_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-15, theta_x= 90, theta_z=90, pos_z= 10)
+
+ranc_mid_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-30, theta_x= 90, theta_z=90)
+
+ranc_out_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90)
+
 
 #each step (so you can turn them off quick)
+
+def install_rancilio_tool():
+
+    tls.rancilio_tool_attach_l_ati()
+
+    UR5.MoveJ([42.109253, -95.512633, 140.361378, -46.587357, -257.904029, -220.364433])
+    # Move to the Rancilio Gasket ready to insert the tool
+    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90, pos_z= -20), blocking=True)
+    UR5.MoveJ(ranc_out_pose, blocking=True)
+    UR5.MoveC(ranc_mid_pose, ranc_in_pose, blocking=True)
+
+    tls.student_tool_detach()
+    run_visual_program(RDK, 'Show_Rancilio_Rancilio_Tool_Rotated', blocking=True) #hide the tool on the machine
+    rancilio_tool.setVisible(False, True) #show it on the toolhead (visual)
+    UR5.MoveJ([24.744220, -85.109034, 125.337227, -42.040277, -290.254345, -219.372494])
+
+
 
 def o(): # Use the Mazzer tool to unlock the Rancilio Scale.
     # PART O - Ready to Test  
@@ -238,13 +261,13 @@ def s(): # Remove the Rancilio tool from the group head.
     UR5.MoveJ([24.744220, -85.109034, 125.337227, -42.040277, -290.254345, -219.372494])
     print("approach postion")
 
-    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-15, theta_x= 90, theta_z=90), blocking=True)
+    UR5.MoveJ(ranc_in_pose, blocking=True)
 
     tls.student_tool_attach()
     run_visual_program(RDK, 'Hide_Rancilio_Rancilio_Tool_Rotated', blocking=True) #hide the tool on the machine
     rancilio_tool.setVisible(True,False) #show it on the toolhead (visual)
 
-    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90), blocking=True)
+    UR5.MoveC(ranc_mid_pose, ranc_out_pose, blocking=True)
 
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90, pos_z= -20), blocking=True)
     UR5.MoveJ([42.109253, -95.512633, 140.361378, -46.587357, -257.904029, -220.364433])
@@ -276,14 +299,16 @@ def v(): # Return the Rancilio tool to the tool stand.
 run_visual_program(RDK, 'Show_Rancilio_Scale_Cup', blocking=True) #show the cup on the scales 
 run_visual_program(RDK, 'Show_Rancilio_Rancilio_Tool_Rotated', blocking=True) #tool in the thing
 
-o()
-p()
-q()
-r() 
+
+install_rancilio_tool()
+# o()
+# p()
+# q()
+# r() 
 s()
-t()
-u()
-v()
+# t()
+# u()
+# v()
 
 
 # go back home
