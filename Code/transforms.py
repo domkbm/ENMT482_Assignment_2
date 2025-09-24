@@ -188,8 +188,8 @@ def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x
         print((depth_row['X']))
         print((rotation_row['X']))
         tool_ht = TxyzRxyz_2_Pose([
-            # base_row['X'] + depth_row['X'],
-            base_row['X'],
+            base_row['X'] - depth_row['X'],
+            # base_row['X'],
             base_row['Y'],
             base_row['Z'],
             base_row.get('Euler_Rx', 0), 

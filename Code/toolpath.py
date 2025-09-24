@@ -215,7 +215,7 @@ def D_alt(): #blocking version
     reversed_circular_path = reversed_circular_path[1:]
     mazzer_scale.tare()
     weight = mazzer_scale.read()
-    weight_target = weight + GROUNDS_WEIGHT_TARGET # alt method
+    #weight_target = weight + GROUNDS_WEIGHT_TARGET # alt method
     weight = 0
     while weight < GROUNDS_WEIGHT_TARGET:
 
@@ -302,14 +302,17 @@ def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WD
 
 
 
-
+def K():
+    UR5.MoveJ([110.110000, -93.140000, 147.240000, -51.240000, 14.470000, 140.000000])
+    UR5.MoveJ(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=80, off_z=-2), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, off_x=3, off_z=-2), blocking=True)
+    
 
 ####HELPER FCNS TO SPIN THE BASKET IN THE MACHINE#####
 spin_start_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=45)
 arc = tf.generate_circular_path(spin_start_pose, tf.pose(points_df, id.Rancillio_Gasket), 45)
 spin_end_pose = arc[-1]
 def basket_spin_fwd():
-    UR5.MoveL(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=-15, theta_y=-90, off_theta_x=45))
     UR5.MoveL(spin_start_pose)
     UR5.MoveC(arc[1], arc[2])
 
@@ -321,19 +324,28 @@ def basket_spin_bkwd():
 
 
 
+def L():
+    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=75, off_z=-2), blocking=True)
+    UR5.MoveJ([-20.420000, -87.420000, 136.600000, -50.120000, -32.130000, 140.560000])
+    UR5.MoveJ([32.440000, -84.510000, 131.920000, -49.900000, 72.850000, 141.770000])
+    UR5.MoveJ(robomath.TxyzRxyz_2_Pose([0,0,-10,0,0,0]) * spin_start_pose)
+    basket_spin_fwd()
+
+
+
 
 A()
 B()
 C()
-D_alt() # or D()
+#D_alt() # or D()
 E()
 F()
 G()
 H()
 I()
 J()
-
+K()
+L()
 # tls.rancilio_tool_attach_l_ati()
-# UR5.MoveJ([32.440000, -84.510000, 131.920000, -49.900000, 52.850000, 141.770000])
 # basket_spin_fwd()
 # basket_spin_bkwd()
