@@ -111,13 +111,6 @@ rancilio_tool = RDK.Item("Rancilio_Tool_(UR5)", ITEM_TYPE_TOOL)
 #get all the frames
 points_df = tf.create_points_df()
 
-ranc_in_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-15, theta_x= 90, theta_z=90, pos_z= 10)
-
-ranc_mid_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-30, theta_x= 90, theta_z=90)
-
-ranc_out_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90)
-
-
 
 
 
@@ -171,42 +164,42 @@ def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the 
     UR5.MoveJ(circle_start_pose, blocking=True)
 
     circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=2)
-    # mazzer_scale.tare()
-    # weight = mazzer_scale.read() #this is a bit weird but maby add a difrencing thing. 
-    # i = 0
-    # while weight <= GROUNDS_WEIGHT_TARGET:
-    #     i += 1
-    #     # Forward movement
-    #     UR5.MoveC(circular_path[1], circular_path[-1], blocking=False)
-    #     ii = 0
-    #     print(f"robot still moving {UR5.Busy()}")
+    mazzer_scale.tare()
+    weight = mazzer_scale.read() #this is a bit weird but maby add a difrencing thing. 
+    i = 0
+    while weight <= GROUNDS_WEIGHT_TARGET:
+        i += 1
+        # Forward movement
+        UR5.MoveC(circular_path[1], circular_path[-1], blocking=False)
+        ii = 0
+        print(f"robot still moving {UR5.Busy()}")
 
         
-    #     while UR5.Busy():
-    #         ii += 1
-    #         weight = mazzer_scale.read()
-    #         print(f'weight {weight}, loop {i}.0{ii}')
-    #         if weight >= GROUNDS_WEIGHT_TARGET:
-    #             UR5.Stop()
-    #             print('ohoh')
-    #             break
-    #     if weight >= GROUNDS_WEIGHT_TARGET:
-    #         break
+        while UR5.Busy():
+            ii += 1
+            weight = mazzer_scale.read()
+            print(f'weight {weight}, loop {i}.0{ii}')
+            if weight >= GROUNDS_WEIGHT_TARGET:
+                UR5.Stop()
+                print('ohoh')
+                break
+        if weight >= GROUNDS_WEIGHT_TARGET:
+            break
 
 
-    #     # weight += 7 # TODO remove
-    #     time.sleep(0.5)
-    #     UR5.MoveC(circular_path[1], circle_start_pose, blocking=False)
-    #     ii = 0
-    #     while UR5.Busy():
-    #         ii += 1
-    #         weight =  mazzer_scale.read()
-    #         print(f'weight {weight}, loop {i}.{ii}0')
-    #         if weight >= GROUNDS_WEIGHT_TARGET:
-    #             UR5.Stop()
-    #             break
-    #     if weight >= GROUNDS_WEIGHT_TARGET:
-    #         break
+        # weight += 7 # TODO remove
+        time.sleep(0.5)
+        UR5.MoveC(circular_path[1], circle_start_pose, blocking=False)
+        ii = 0
+        while UR5.Busy():
+            ii += 1
+            weight =  mazzer_scale.read()
+            print(f'weight {weight}, loop {i}.{ii}0')
+            if weight >= GROUNDS_WEIGHT_TARGET:
+                UR5.Stop()
+                break
+        if weight >= GROUNDS_WEIGHT_TARGET:
+            break
     #move up to let go of the lever
     UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,60,0,0,0]) * UR5.Pose(), blocking=True)
 
@@ -220,31 +213,31 @@ def D_alt(): #blocking version
     reversed_circular_path = list(reversed(reversed_circular_path))
     reversed_circular_path.append(circle_start_pose)
     reversed_circular_path = reversed_circular_path[1:]
-    # mazzer_scale.tare()
-    # weight = mazzer_scale.read()
-    # weight_target = weight + GROUNDS_WEIGHT_TARGET # alt method
-    # weight = 0
-    # while weight < GROUNDS_WEIGHT_TARGET:
+    mazzer_scale.tare()
+    weight = mazzer_scale.read()
+    weight_target = weight + GROUNDS_WEIGHT_TARGET # alt method
+    weight = 0
+    while weight < GROUNDS_WEIGHT_TARGET:
 
-    #     #move fwd
-    #     for pose in circular_path:
-    #         UR5.MoveL(pose)
-    #         weight = mazzer_scale.read()
-    #         if weight >= GROUNDS_WEIGHT_TARGET:
-    #             break
+        #move fwd
+        for pose in circular_path:
+            UR5.MoveL(pose)
+            weight = mazzer_scale.read()
+            if weight >= GROUNDS_WEIGHT_TARGET:
+                break
 
-    #     # weight += 20
-    #     if weight >= GROUNDS_WEIGHT_TARGET:
-    #         break
+        # weight += 20
+        if weight >= GROUNDS_WEIGHT_TARGET:
+            break
             
-    #     #move back
-    #     for pose in reversed_circular_path:
-    #         UR5.MoveL(pose)
-    #         weight = mazzer_scale.read()
-    #         if weight >= GROUNDS_WEIGHT_TARGET:
-    #             break
-    #     if weight >= GROUNDS_WEIGHT_TARGET:
-    #         break
+        #move back
+        for pose in reversed_circular_path:
+            UR5.MoveL(pose)
+            weight = mazzer_scale.read()
+            if weight >= GROUNDS_WEIGHT_TARGET:
+                break
+        if weight >= GROUNDS_WEIGHT_TARGET:
+            break
         
     UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,60,0,0,0]) * UR5.Pose(), blocking=True)
     UR5.MoveJ([117.300000, -102.340000, 94.140000, -80.130000, -95.230000, -231.640000])
@@ -319,7 +312,7 @@ def L():#TODO l. Remove the Rancilio tool from the PUQ fixture, and insert it in
     UR5.MoveJ([88.250000, -94.510000, 144.280000, -51.830000, -49.030000, 141.300000])
     UR5.MoveJ([-37.820000, -94.510000, 144.280000, -51.830000, -49.030000, 141.300000])
     UR5.MoveJ([-37.820000, -94.510000, 138.680000, -35.020000, -18.210000, 130.270000])
-    UR5.MoveJ([-4.200000, -77.040000, 138.680000, 214.320000, -1.400000, -138.680000])
+    # UR5.MoveJ([-4.200000, -77.040000, 138.680000, 214.320000, -1.400000, -138.680000])
     # -4.200000, -95.120000, 138.680000, 214.320000, -1.400000, -121.870000
     # UR5.MoveJ([42.109253,-95.512633, 140.361378, -46.587357, -257.904029, -220.364433], blocking=True)
 
@@ -349,15 +342,16 @@ def basket_spin_bkwd():
 
 
 
-# A()
-# B()
-# C()
-# D_alt() # or D()
-# E()
-# F()
-# G()
-# H()
-# I()
+A()
+B()
+C()
+D_alt() # or 
+# D()
+E()
+F()
+G()
+H()
+I()
 J()
 K()
 L()
