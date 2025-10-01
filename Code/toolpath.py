@@ -214,40 +214,55 @@ def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the 
     #move up to let go of the leverb 
     # brutal not a fan. 
 
-    while not UR5.Busy():
-        time.sleep(0.1)
-        print('stopping?')
+    # while not UR5.Busy():
+    #     time.sleep(0.1)
+    #     print('stopping?')
 
     # time.sleep(1)
     # UR5.Disconnect()
     # time.sleep(1)
     # UR5.Connect()
 
-    connected = UR5.Connected()
-    print("Connected:", connected)
+    # connected = UR5.Connected()
+    # print("Connected:", connected)
 
     UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,60,0,0,0]) * UR5.Pose(), blocking=True)
 
+def D_sweep(): # the first two pulls smooth
+    UR5.MoveJ(tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 9, off_y= 30, off_z = -12)) #-190
+    circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 8, off_y= 30, off_z = -7) #-170
+    circle_start_pose_end = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 8, off_y= 30, off_z = -15) #-170
+    circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=3)
+    mazzer_scale.tare()
+    i = 0
+    while i < 2:
+        i += 1
+        UR5.MoveJ(circle_start_pose, blocking=True)
+        UR5.MoveC(circular_path[1], circular_path[-1], blocking=True) # Forward movement
+        UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,30,0,0,0]) * UR5.Pose(), blocking=True) # move up 
+        UR5.MoveC(robomath.TxyzRxyz_2_Pose([0,0,30,0,0,0]) * circular_path[2], robomath.TxyzRxyz_2_Pose([0,0,30,0,0,0]) *circle_start_pose, blocking=True) #bwd movement
+        UR5.MoveL(circle_start_pose_end, blocking=True)
+
+
 def D_alt(): #blocking version
-    UR5.MoveJ(tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-190, off_x= 9, off_y= 30, off_z = -12))
+    UR5.MoveJ(tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 9, off_y= 30, off_z = -12))
     circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 8, off_y= 30, off_z = -7)
     UR5.MoveJ(circle_start_pose, blocking=True)
-
     circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=20)
     reversed_circular_path = circular_path.copy()
     reversed_circular_path = list(reversed(reversed_circular_path))
     reversed_circular_path.append(circle_start_pose)
     reversed_circular_path = reversed_circular_path[1:]
-    mazzer_scale.tare()
+    # mazzer_scale.tare()
     weight = mazzer_scale.read()
     #weight_target = weight + GROUNDS_WEIGHT_TARGET # alt method
-    weight += 0
     while weight < GROUNDS_WEIGHT_TARGET:
 
         #move fwd
         for pose in circular_path:
             UR5.MoveL(pose)
             weight = mazzer_scale.read()
+            print(weight)
             if weight >= GROUNDS_WEIGHT_TARGET:
                 break
 
@@ -259,6 +274,7 @@ def D_alt(): #blocking version
         for pose in reversed_circular_path:
             UR5.MoveL(pose)
             weight = mazzer_scale.read()
+            print(weight)
             if weight >= GROUNDS_WEIGHT_TARGET:
                 break
         if weight >= GROUNDS_WEIGHT_TARGET:
@@ -354,9 +370,11 @@ def basket_spin_bwd_linear():
     UR5.setRounding(-1)
 
 def L(): #TODO l) Remove the Rancilio tool from the PUQ fixture, and insert it into the Rancilio group head.
-    UR5.MoveJ([-20.420000, -87.420000, 136.600000, -50.120000, -32.130000, 140.560000])
-    UR5.MoveJ([32.440000, -84.510000, 131.920000, -49.900000, 72.850000, 141.770000])
-    UR5.MoveJ(robomath.TxyzRxyz_2_Pose([0,0,-20,0,0,0]) * spin_start_pose)
+    spin = tf.generate_circular_path(UR5.Pose(), robomath.TxyzRxyz_2_Pose([0,0,0,0,0,0]), -100)
+    UR5.MoveC(spin[1], spin[-1])
+    # UR5.MoveJ([-20.420000, -87.420000, 136.600000, -50.120000, -32.130000, 140.560000])
+    UR5.MoveJ([46.823779, -72.811873, 113.229418, -42.295526, 122.202665, 139.302676])
+    UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,-20,0,0,0]) * spin_start_pose)
     UR5.MoveL(spin_start_pose)
     basket_spin_fwd_linear()
     tls.student_tool_detach()
@@ -379,6 +397,7 @@ A()
 B()
 C()
 #D()
+D_sweep()
 D_alt()
 E()
 F()
