@@ -1,4 +1,22 @@
 
+arc_single = tf.generate_circular_path(spin_start_pose, tf.pose(points_df, id.Rancillio_Gasket), 45)
+def basket_spin_fwd():
+    UR5.MoveL(spin_start_pose)
+    UR5.MoveC(arc_single[1], arc_single[2])
+
+def basket_spin_bkwd():
+    # UR5.MoveL(spin_end_pose) # if coming from somwhere else
+    UR5.MoveC(arc_single[1], spin_start_pose)
+    UR5.MoveL(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=-15, theta_y=-90, off_theta_x=45))
+
+
+def basken_spin_fwd_circ():
+    UR5.MoveL(spin_start_pose)
+    print(len(arc_many[1:]) / 2)
+    for i in range(int(len(arc_many[1:]) / 2)):
+        UR5.MoveC(arc_many[2*i+1], arc_many[2*i+2])
+
+
 while weight <= weight_target:
     # Forward movement
     i = j = 0

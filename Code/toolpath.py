@@ -30,8 +30,8 @@ from time import sleep
 from robodk.robolink import *
 import robodk.robomath as rm
 
-# from robodk.robodialogs import *
-# from modbus_scale_client import modbus_scale_client
+from robodk.robodialogs import *
+from modbus_scale_client import modbus_scale_client
 
 
 import tools
@@ -91,18 +91,18 @@ RDK = Robolink()
 RDK.setRunMode(RUNMODE_SIMULATE)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
-# mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
-# if mazzer_scale.server_exists() == False:
-#     if RUNMODE_SIMULATE:
-#         print("Mazzer scale not detected, output will be simulated.")
-#     else:
-#         RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
-# rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
-# if mazzer_scale.server_exists() == False:
-#     if RUNMODE_SIMULATE:
-#         print("Rancilio scale not detected, output will be simulated.")
-#     else:
-#         RDK.ShowMessage("Rancilio scale not detected, output will be simulated.")
+mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
+if mazzer_scale.server_exists() == False:
+    if RUNMODE_SIMULATE:
+        print("Mazzer scale not detected, output will be simulated.")
+    else:
+        RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
+if mazzer_scale.server_exists() == False:
+    if RUNMODE_SIMULATE:
+        print("Rancilio scale not detected, output will be simulated.")
+    else:
+        RDK.ShowMessage("Rancilio scale not detected, output will be simulated.")
 
 mazzer_tool = RDK.Item("Mazzer_Tool_(UR5)", ITEM_TYPE_TOOL) 
 rancilio_tool = RDK.Item("Rancilio_Tool_(UR5)", ITEM_TYPE_TOOL) 
@@ -160,14 +160,18 @@ def C(): #TODO c) Use the Mazzer tool to turn the Mazzer on, wait 15s, and turn 
 
 def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the scale reports 20±0.1g of coffee grounds has been deposited in the Rancilio tool.
     UR5.MoveJ(tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-190, off_x= 9, off_y= 30, off_z = -12))
-    circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 8, off_y= 30, off_z = -7)
-    UR5.MoveJ(circle_start_pose, blocking=True)
+    circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-170, off_x= 8, off_y= 30, off_z = -7)
+    circle_start_pose_end = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-170, off_x= 8, off_y= 30, off_z = -15)
 
-    circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=2)
+    time.sleep(1)
+
+    circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=3)
     mazzer_scale.tare()
+    weight = 0
     weight = mazzer_scale.read() #this is a bit weird but maby add a difrencing thing. 
     i = 0
     while weight <= GROUNDS_WEIGHT_TARGET:
+        UR5.MoveJ(circle_start_pose, blocking=True)
         i += 1
         # Forward movement
         UR5.MoveC(circular_path[1], circular_path[-1], blocking=False)
@@ -181,6 +185,7 @@ def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the 
             print(f'weight {weight}, loop {i}.0{ii}')
             if weight >= GROUNDS_WEIGHT_TARGET:
                 UR5.Stop()
+                # RDK.RunCode("stopj(2.0)") 
                 print('ohoh')
                 break
         if weight >= GROUNDS_WEIGHT_TARGET:
@@ -188,19 +193,39 @@ def D(): #TODO d) Use the Mazzer tool to pull the Mazzer dosing lever until the 
 
 
         # weight += 7 # TODO remove
-        time.sleep(0.5)
-        UR5.MoveC(circular_path[1], circle_start_pose, blocking=False)
+
+        UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,30,0,0,0]) * UR5.Pose(), blocking=True)
+        UR5.MoveC(robomath.TxyzRxyz_2_Pose([0,0,30,0,0,0]) * circular_path[2], robomath.TxyzRxyz_2_Pose([0,0,30,0,0,0]) *circle_start_pose, blocking=False)
         ii = 0
         while UR5.Busy():
             ii += 1
-            weight =  mazzer_scale.read()
+            weight = mazzer_scale.read()
             print(f'weight {weight}, loop {i}.{ii}0')
             if weight >= GROUNDS_WEIGHT_TARGET:
                 UR5.Stop()
+                # RDK.RunCode("stopj(2.0)") 
                 break
         if weight >= GROUNDS_WEIGHT_TARGET:
             break
-    #move up to let go of the lever
+
+
+        UR5.MoveL(circle_start_pose_end, blocking=True)
+
+    #move up to let go of the leverb 
+    # brutal not a fan. 
+
+    while not UR5.Busy():
+        time.sleep(0.1)
+        print('stopping?')
+
+    # time.sleep(1)
+    # UR5.Disconnect()
+    # time.sleep(1)
+    # UR5.Connect()
+
+    connected = UR5.Connected()
+    print("Connected:", connected)
+
     UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,60,0,0,0]) * UR5.Pose(), blocking=True)
 
 def D_alt(): #blocking version
@@ -216,7 +241,7 @@ def D_alt(): #blocking version
     mazzer_scale.tare()
     weight = mazzer_scale.read()
     #weight_target = weight + GROUNDS_WEIGHT_TARGET # alt method
-    weight = 0
+    weight += 0
     while weight < GROUNDS_WEIGHT_TARGET:
 
         #move fwd
@@ -299,45 +324,62 @@ def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WD
     run_visual_program(RDK, 'Hide_WDT_Rancilio_Tool', blocking=True) #tool ouff the wdt (visual)
     rancilio_tool.setVisible(True,False) #put it back on the toolhead (visual)
     UR5.MoveL(above_wdt_pose)
-
-
-
-def K():
     UR5.MoveJ([110.110000, -93.140000, 147.240000, -51.240000, 14.470000, 140.000000])
+    tls.wdt_shut()
+
+def K(): #TODO k) Place the Rancilio tool into the PUQ fixture, and wait 2 seconds while the machine tamps the coffee grounds.
     UR5.MoveJ(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=80, off_z=-2), blocking=True)
     UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, off_x=3, off_z=-2), blocking=True)
+    time.sleep(2)
+    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=75, off_z=-2), blocking=True)
     
 
 ####HELPER FCNS TO SPIN THE BASKET IN THE MACHINE#####
 spin_start_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=45)
-arc = tf.generate_circular_path(spin_start_pose, tf.pose(points_df, id.Rancillio_Gasket), 45)
-spin_end_pose = arc[-1]
-def basket_spin_fwd():
-    UR5.MoveL(spin_start_pose)
-    UR5.MoveC(arc[1], arc[2])
-
-def basket_spin_bkwd():
-    # UR5.MoveL(spin_end_pose) # if coming from somwhere else
-    UR5.MoveC(arc[1], spin_start_pose)
-    UR5.MoveL(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=-15, theta_y=-90, off_theta_x=45))
+arc_many = tf.generate_circular_path(spin_start_pose, tf.pose(points_df, id.Rancillio_Gasket), 35, n_steps=24) # needs to be an even number
+spin_end_pose = arc_many[-1]
 
 
+def basket_spin_fwd_linear():
+    UR5.setRounding(2)
+    for pose in arc_many[1:]:
+        UR5.MoveL(pose)
+    UR5.setRounding(-1)
 
+def basket_spin_bwd_linear():
+    UR5.setRounding(2)
+    arc_reverse = arc_many[::-1]
+    for pose in arc_reverse[1:]:
+        UR5.MoveL(pose)
+    UR5.setRounding(-1)
 
-def L():
-    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=75, off_z=-2), blocking=True)
+def L(): #TODO l) Remove the Rancilio tool from the PUQ fixture, and insert it into the Rancilio group head.
     UR5.MoveJ([-20.420000, -87.420000, 136.600000, -50.120000, -32.130000, 140.560000])
     UR5.MoveJ([32.440000, -84.510000, 131.920000, -49.900000, 72.850000, 141.770000])
-    UR5.MoveJ(robomath.TxyzRxyz_2_Pose([0,0,-10,0,0,0]) * spin_start_pose)
-    basket_spin_fwd()
+    UR5.MoveJ(robomath.TxyzRxyz_2_Pose([0,0,-20,0,0,0]) * spin_start_pose)
+    UR5.MoveL(spin_start_pose)
+    basket_spin_fwd_linear()
+    tls.student_tool_detach()
+    rancilio_tool.setVisible(False,False) #put it off the toolhead (visual)
+    run_visual_program(RDK, 'Show_Rancilio_Rancilio_Tool_Rotated', blocking=True) #put the tool in the machine (visual) 
+    UR5.MoveL(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-20,0,0,0])) # move away from tool
 
+def S(): #TODO s) Remove the Rancilio tool from the group head.
+    UR5.MoveJ(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-20,0,0,0])) # move away from tool
+    UR5.MoveL(spin_end_pose)
+    tls.student_tool_attach()
+    rancilio_tool.setVisible(True,False) #put it on the toolhead (visual)
+    run_visual_program(RDK, 'Hide_Rancilio_Rancilio_Tool_Rotated', blocking=True) #put the tool in the machine (visual) 
+    basket_spin_bwd_linear()
+    UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,-20,0,0,0]) * spin_start_pose)
 
 
 
 A()
 B()
 C()
-#D_alt() # or D()
+#D()
+D_alt()
 E()
 F()
 G()
@@ -346,6 +388,5 @@ I()
 J()
 K()
 L()
-# tls.rancilio_tool_attach_l_ati()
-# basket_spin_fwd()
-# basket_spin_bkwd()
+S()
+
