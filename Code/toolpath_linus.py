@@ -102,7 +102,7 @@ def run_visual_program(RDK, name, blocking=True):
 
 
 RDK = Robolink()
-RDK.setRunMode(RUNMODE_SIMULATE)
+RDK.setRunMode(RUNMODE_RUN_ROBOT)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
 mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
@@ -129,19 +129,32 @@ points_df = tf.create_points_df()
 # ----------POSES and Helper functions for Rancilio Tool Spin -------------------------------
 # -------------------------------------------------------------------------------------------
 
-spin_start_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=45)
-arc = tf.generate_circular_path(spin_start_pose, tf.pose(points_df, id.Rancillio_Gasket), 30)
-spin_end_pose = arc[-1]
+spin_start_pose = ([47.397616, -74.045278, 111.298834, -38.600230, -236.297652, -219.602552]) # get data from the points df
+spin_mid_pose = ([34.275286, -79.861239, 120.368916, -43.924691, -269.457373, -219.011358]) # get data from the points df
+spin_end_pose = ([20.222119, -79.806297, 120.313372, -45.002658, -303.576835, -217.145842]) # get data from the points df
+removal_approach_pose = ([])
+
+spin_approach_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=-20, theta_y=-90, off_theta_x=45)
+
+
+
+removal_approach_pose = ([24.744220, -85.109034, 125.337227, -42.040277, -290.254345, -219.372494])
+
+#spin_start_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=45)
+#spin_mid_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=30)
+#spin_end_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=15)
 
 def basket_spin_fwd():
-    UR5.MoveL(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=-15, theta_y=-90, off_theta_x=45))
+    # entry point -15mm below the gasket
+    UR5.MoveL(spin_approach_pose)
     UR5.MoveL(spin_start_pose)
-    UR5.MoveC(arc[1], arc[2])
+    UR5.MoveC(spin_mid_pose, spin_end_pose)
 
 def basket_spin_bkwd():
-    # UR5.MoveL(spin_end_pose) # if coming from somwhere else
-    UR5.MoveC(arc[1], spin_start_pose)
-    UR5.MoveL(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=-15, theta_y=-90, off_theta_x=45))
+    # UR5.MoveL(spin_end_pose) with a linear move alinged with the tool
+    UR5.MoveL(spin_end_pose) # if coming from somewhere else
+    UR5.MoveC(spin_mid_pose, spin_start_pose)
+    UR5.MoveL(spin_approach_pose)
 
 # --------------------------------------------------------------------------------------------
 # ----------Installation of Rancilio Tool ----------------------------------------------------
@@ -153,7 +166,7 @@ def install_rancilio_tool():
 
     UR5.MoveJ([42.109253, -95.512633, 140.361378, -46.587357, -257.904029, -220.364433])
     # Move to the Rancilio Gasket ready to insert the tool
-    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90, pos_z= -20), blocking=True)
+    # UR5.MoveJ(tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90-45, theta_x= 90, theta_z=90, pos_z= -20), blocking=True)
     # UR5.MoveJ(spin_start_pose, blocking=True)
     basket_spin_fwd()
 
@@ -227,10 +240,10 @@ def q(): #Use the Mazzer tool to lock the Rancilio Scale.
 def s(): # Remove the Rancilio tool from the group head.
     
     # tls.rancilio_tool_attach_l_ati()
-    UR5.MoveJ([24.744220, -85.109034, 125.337227, -42.040277, -290.254345, -219.372494])
-    print("approach postion")
+    UR5.MoveJ(removal_approach_pose)
+    print("approach position")
 
-    UR5.MoveJ(spin_end_pose, blocking=True)
+    UR5.MoveL(spin_end_pose, blocking=True)
 
     tls.student_tool_attach()
     run_visual_program(RDK, 'Hide_Rancilio_Rancilio_Tool_Rotated', blocking=True) #hide the tool on the machine

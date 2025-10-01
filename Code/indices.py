@@ -6,7 +6,7 @@ so the key indeces are human readable
 Cup = 1
 Cup_Open = 18
 Cup_Closed = 19
-Cup_Coffiee = 20
+Cup_Coffee = 20
 Mazzer = 3
 Mazzer_Lever = 24
 Mazzer_Off_Button = 25
@@ -105,7 +105,7 @@ IP_RANCILIO_3 = "192.168.22.4"
 # DT_Plate_Centre_Drill_Hole = 45
 # UK_Rotor_Fastener_1800_Oclock = 46
 # ATI_9120_011T_Centre = 47
-# Cup_Holder_Top_Face_Centre_Open = 48
+Cup_Holder_Top_Face_Centre_Open = 48
 # Cup_Holder_Top_Face_Centre_Shut = 49
 # ATI_9120_011T_Centre = 50
 # YSR_12_Cushioning_Cylinder_Tip = 51
