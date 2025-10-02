@@ -1,5 +1,19 @@
 """
-so the key indeces are human readable
+indices.py
+
+ENMT482 Robotics Assignment
+
+This script uses indices corresponding to keys provided in the points Excel spreadsheet 
+available on the Git repository. These keys define the points used in the program.
+
+The code is written to aid human readability for toolpath.py.
+
+Authors:
+- D. McNicholas
+- L. Ritchie
+- O. Handforth
+
+Date: 2 October 2025
 """
 
 #POI
