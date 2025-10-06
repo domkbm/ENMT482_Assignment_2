@@ -383,10 +383,11 @@ def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WD
     tls.wdt_shut()
 
 def K(): #TODO k) Place the Rancilio tool into the PUQ fixture, and wait 2 seconds while the machine tamps the coffee grounds.
-    UR5.MoveJ(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=80, off_z=-2), blocking=True)
-    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, off_x=3, off_z=-2), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=80, off_z=0), blocking=True)
+    # time.sleep(10000)
+    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, off_x=0, off_z=0), blocking=True)
     time.sleep(2)
-    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=75, off_z=-2), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=75, off_z=0), blocking=True)
     
 
 ####HELPER FCNS TO SPIN THE BASKET IN THE MACHINE#####
@@ -622,23 +623,24 @@ def R(): #Use the cup tool to carefully pick up the cup of coffee and place it i
 
 
 
-A()
-B()
-C()
-#D()
-D_sweep()
-D_alt()
-E()
-F()
-G()
-H()
-I()
+# A()
+# B()
+# C()
+# #D()
+# D_sweep()
+# D_alt()
+# E()
+# F()
+# G()
+# H()
+# I()
 
 
-M()
-N()
+# M()
+# N()
 
-J()
+# J()
+UR5.MoveJ([95.034247, -95.178398, 149.103879, -50.758080, -39.550311, 137.361298])
 K()
 L()
 
