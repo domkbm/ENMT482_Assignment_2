@@ -383,11 +383,10 @@ def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WD
     tls.wdt_shut()
 
 def K(): #TODO k) Place the Rancilio tool into the PUQ fixture, and wait 2 seconds while the machine tamps the coffee grounds.
-    UR5.MoveJ(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=75, off_z=0), blocking=True)
-    # time.sleep(10000)
-    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, off_x=0, off_z=-2), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=80, off_z=-2), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, off_x=3, off_z=-2), blocking=True)
     time.sleep(2)
-    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=70, off_z=0), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=75, off_z=-2), blocking=True)
     
 
 ####HELPER FCNS TO SPIN THE BASKET IN THE MACHINE#####
@@ -424,12 +423,12 @@ def L(): #TODO l) Remove the Rancilio tool from the PUQ fixture, and insert it i
     tls.student_tool_detach()
     rancilio_tool.setVisible(False,False) #put it off the toolhead (visual)
     run_visual_program(RDK, 'Show_Rancilio_Rancilio_Tool_Rotated', blocking=True) #put the tool in the machine (visual) 
-    UR5.MoveL(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-50,0,0,0])) # move away from tool
+    UR5.MoveL(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-20,0,0,0])) # move away from tool
 
 def S(): #TODO s) Remove the Rancilio tool from the group head.
     UR5.MoveJ([108.190000, -105.000000, 86.540000, -73.770000, -89.990000, -206.710000])
     UR5.MoveJ([41.350000, -83.480000, 143.290000, -62.040000, 61.750000, 141.390000])
-    UR5.MoveJ(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-50,0,0,0])) # move away from tool
+    UR5.MoveJ(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-20,0,0,0])) # move away from tool
     UR5.MoveL(spin_end_pose)
     tls.student_tool_attach()
     rancilio_tool.setVisible(True,False) #put it on the toolhead (visual)
@@ -530,7 +529,7 @@ def P(): # Use the Mazzer tool to operate the Rancilio hot water switch until th
     weight = 0
     rancilio_scale.tare()
     print("Tared Scale")
-    while (weight <= CORRECT_WEIGHT):
+    while (weight >= CORRECT_WEIGHT):
         weight = rancilio_scale.read()
         print(f"Current Weight: {weight}g")
 
@@ -623,24 +622,23 @@ def R(): #Use the cup tool to carefully pick up the cup of coffee and place it i
 
 
 
-# A()
-# B()
-# C()
-# #D()
-# D_sweep()
-# D_alt()
-# E()
-# F()
-# G()
-# H()
-# I()
+A()
+B()
+C()
+#D()
+D_sweep()
+D_alt()
+E()
+F()
+G()
+H()
+I()
 
 
-# M()
-# N()
+M()
+N()
 
-# J()
-UR5.MoveJ([95.034247, -95.178398, 149.103879, -50.758080, -39.550311, 137.361298])
+J()
 K()
 L()
 

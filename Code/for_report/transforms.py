@@ -1,0 +1,424 @@
+"""
+Author Dominic McNicholas
+UC Mecatronics
+Date 09/09/25
+
+Co orinates transformation functions for the assignment and approach points.
+"""
+
+import numpy as np
+import scipy.spatial.transform as sp
+import pandas as pd
+import re
+import indices
+from robodk import robolink, robomath
+from robodk.robomath import Pose_2_TxyzRxyz, TxyzRxyz_2_Pose
+import indices as idx
+
+
+
+
+
+def create_points_df(robot_name='robot_3', filepath='points.xlsx'):
+    points_df = pd.read_excel(filepath, sheet_name=robot_name)
+    points_df['Euler_Rx'] = np.nan
+    points_df['Euler_Ry'] = np.nan
+    points_df['Euler_Rz'] = np.nan
+
+    for i, row in points_df.iterrows():
+        if row['Frame'] == 'world' and str(row.get('Origin', '')).lower() == 'yes':
+            fixture = row['Fixture']
+            children = points_df[
+                (points_df['Fixture'] == fixture)
+                & (points_df['Frame'] == 'world')
+                & (points_df['Origin'].str.lower() == 'no')
+            ]
+
+            if children.empty:
+                # print(f"Row {i+1}: No points defining rotation, frame is not rotated compared to origin")
+                continue
+
+            # Collect local vectors to define rotation
+            local_vectors = []
+            global_vectors = []
+            for j, child_row in children.iterrows():
+                location = child_row['Location']
+                local_frame = points_df[
+                    (points_df['Location'] == location)
+                    & (points_df['Frame'] != 'world')
+                ]
+                if local_frame.empty:
+                    # print(f"Row {i+1}, Child Row {j+1}: No local frame found, skipping")
+                    continue
+
+                local_frame = local_frame.iloc[0]
+                vec_local = np.array([local_frame['X'], local_frame['Y'], local_frame['Z']], dtype=float)
+                # print(f"Row {i+1}, Child Row {j+1}: Local vector {vec_local}")
+                local_vectors.append(vec_local)
+                vec_global = np.array([child_row['X'], child_row['Y'], child_row['Z']], dtype=float) - np.array([row['X'], row['Y'], row['Z']], dtype=float)
+                # print(f"Row {i+1}, Child Row {j+1}: Global vector {vec_global}")
+                global_vectors.append(vec_global)
+            
+            #now we have all the vectors, lets find the rotation for the perant frame
+            global_vectors = np.array(global_vectors)
+            local_vectors = np.array(local_vectors)
+            #cup dispencer and mazzer have complex rotations that cannot be idetifed with just the vectors given
+            if fixture == 'cup_dispenser':
+                #cup dispencer is first rotated about Y 90degrees then rotated around its new x by an amout defined by its child point (point 2)
+                v = global_vectors[0]
+                v_proj = np.array([v[0], v[1], 0])
+                ax1 = np.array([1, 0, 0])  # x-axis as reference
+                ax2 = np.array([0, 1, 0])  # y-axis
+                #calc rottaion around new x, is the old z so we can just use that 
+                theta1 = np.arctan2(-np.dot(v_proj, ax1), np.dot(v_proj, ax2)) # this is the angle between the 2 and the global frame 
+                # print(np.rad2deg(theta1))
+                theta2 = np.arctan2(local_vectors[0][2],local_vectors[0][1] ) # this is the angle between the 2 and the local frame 
+                # print(np.rad2deg(theta2))
+                theta = theta1 - theta2 # so this is the rotation of the local frame wrt global (around x)
+                # print(np.rad2deg(theta))
+                Ry = np.array([[0, 0, -1],
+                              [0, 1, 0],
+                              [1, 0, 0]])
+                Rx = np.array([[1,0,0],
+                               [0, np.cos(theta), -np.sin(theta)],
+                               [0,np.sin(theta), np.cos(theta)]])
+                R = Ry @ Rx
+                # print(R)
+                rotation = sp.Rotation.from_matrix(R)
+                euler_angles = rotation.as_euler('XYZ', degrees=False)
+                # print(rotation.as_euler('XYZ', degrees=True))
+                # print(f"Row {i+1}: Computed Euler angles for cup_dispenser: {180*euler_angles/np.pi} deg")
+                points_df.loc[i, ['Euler_Rx', 'Euler_Ry', 'Euler_Rz']] = euler_angles
+
+
+            elif fixture == 'mazzer':
+                local_vectors = np.vstack([local_vectors, np.array([0,0,0])])
+                global_vectors = np.vstack([global_vectors, np.array([row['X'], row['Y'], row['Z']])])
+                rotation = sp.Rotation.align_vectors(global_vectors, local_vectors)
+                euler_angles = rotation[0].as_euler('XYZ', degrees=False)
+                points_df.loc[i, ['Euler_Rx', 'Euler_Ry', 'Euler_Rz']] = euler_angles
+                # print(f"Row {i+1}: Computed Euler angles {180*euler_angles / np.pi} deg")                
+
+
+            else: # all other fframes are the simple case of rotation around z, this is a quick way of doing it.
+                #we know they are rotations in z so set the z values to zero to remove abiguity 
+                global_vectors[:,2] = 0 
+                local_vectors[:,2] = 0 
+                rotation = sp.Rotation.align_vectors(global_vectors, local_vectors)
+                euler_angles = rotation[0].as_euler('XYZ', degrees=False)
+                points_df.loc[i, ['Euler_Rx', 'Euler_Ry', 'Euler_Rz']] = euler_angles
+
+        else: #currently assume that there is no rotation going on in local frames
+            euler_angles = [0,0,0]
+            points_df.loc[i, ['Euler_Rx', 'Euler_Ry', 'Euler_Rz']] = euler_angles
+
+
+   
+    return points_df
+
+
+def get_global_frame(frame_df, frame_key):
+    """
+    Compute the global pose of a frame by recursively walking up the frame hierarchy.
+
+    Parameters:
+        frame_key : int
+            The key of the current frame in points_df
+    Returns:
+        4x4 np.ndarray : global homogeneous transformation matrix
+    """
+    # Get frame position and rotation
+    frame_row = frame_df.loc[frame_df['Key'] == frame_key].iloc[0]
+    # print(frame_row)
+    frame_ht = TxyzRxyz_2_Pose([
+        frame_row['X'],
+        frame_row['Y'],
+        frame_row['Z'],
+        frame_row['Euler_Rx'],
+        frame_row['Euler_Ry'],
+        frame_row['Euler_Rz']]
+    )
+    return frame_ht
+
+
+def pose(frame_df,frame_key, tool=None, pos_x = 0, pos_y = 0, pos_z = 0, theta_x = 0, theta_y = 0, theta_z = 0, off_x = 0, off_y = 0, off_z = 0, off_theta_x = 0, off_theta_y = 0, off_theta_z = 0):
+    """
+    Compute the global pose of a frame/tool.
+
+    Parameters:
+        frame_key : int
+            The key of the desired frame in points_df 
+        tool : int
+            The key of the desired tool in points_f
+        pos_x, pos_y, pos_z : float
+            Local position relative to the frame (mm)
+        theta_x, theta_y, theta_z : float (deg)
+            Local rotation relative to the frame
+        off_x,off_y,off_z
+            Experiemental tool translations, probs olny for mazzer (dont use these atm)    
+    Returns:
+        4x4 np.ndarray : global homogeneous transformation matrix
+    """
+    theta_x = np.deg2rad(theta_x)
+    theta_y = np.deg2rad(theta_y)
+    theta_z = np.deg2rad(theta_z)
+    off_theta_x = np.deg2rad(off_theta_x)
+    off_theta_y = np.deg2rad(off_theta_y)
+    off_theta_z = np.deg2rad(off_theta_z)
+    tool_off = TxyzRxyz_2_Pose([off_x,off_y,off_z,off_theta_x,0,0])
+    tool_off = robomath.invH(tool_off)
+
+    if tool == None:
+        tool_ht = TxyzRxyz_2_Pose([0,0,0,0,0,0])
+    elif tool == 55: #specal case for placing the basket of the rancillo on somthing
+        base_key = tool
+        base_row = frame_df.loc[frame_df['Key'] == base_key].iloc[0]
+        rotation_key = 63
+        rotation_row = frame_df.loc[frame_df['Key'] == rotation_key].iloc[0]
+        tool_ht = TxyzRxyz_2_Pose([
+            base_row['X'],
+            base_row['Y'],
+            base_row['Z'],
+            base_row.get('Euler_Rx', 0), # + np.rad2deg(rotation_row)
+            base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row['X']),
+            base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
+        tool_ht = robomath.invH(tool_ht)    
+    elif tool == 63: #specal case for placing the base of the rancillo on somthing
+        base_key = 55 # basket  
+        rotation_key = 63# handle rotation
+        depth_key = 64 # depth
+        base_row = frame_df.loc[frame_df['Key'] == base_key].iloc[0]
+        rotation_row = frame_df.loc[frame_df['Key'] == rotation_key].iloc[0]
+        depth_row = frame_df.loc[frame_df['Key'] == depth_key].iloc[0]
+        # print((depth_row['X']))
+        # print((rotation_row['X']))
+        tool_ht = TxyzRxyz_2_Pose([
+            base_row['X'] - depth_row['X'],
+            # base_row['X'],
+            base_row['Y'],
+            base_row['Z'],
+            base_row.get('Euler_Rx', 0), 
+            base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row["X"]),
+            base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
+        # print(tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)]))
+        tool_ht = robomath.invH(tool_ht)
+
+    else:
+        tcp_key = tool
+        tool_row = frame_df.loc[frame_df['Key'] == tcp_key].iloc[0]
+        tool_ht = TxyzRxyz_2_Pose([
+        tool_row['X'],
+        tool_row['Y'],
+        tool_row['Z'],
+        tool_row.get('Euler_Rx', 0),
+        tool_row.get('Euler_Ry', 0),
+        tool_row.get('Euler_Rz', 0) ]) #- np.deg2rad(50)
+        tool_ht = robomath.invH(tool_ht)
+
+    # Local transform of the robot in this frame
+    local_ht = TxyzRxyz_2_Pose([pos_x, pos_y, pos_z, theta_x, theta_y, theta_z])
+    
+    # Get frame position and rotation
+    # print(f'frame {frame_key}')
+    # print(frame_df.iloc[frame_key-1])
+    frame_row = frame_df.loc[frame_df['Key'] == frame_key].iloc[0]
+    frame_ht = TxyzRxyz_2_Pose([
+        frame_row['X'],
+        frame_row['Y'],
+        frame_row['Z'],
+        frame_row.get('Euler_Rx', 0),
+        frame_row.get('Euler_Ry', 0),
+        frame_row.get('Euler_Rz', 0)]
+    )  
+ 
+    # Compute the transform of this frame relative to its parent
+    combined_ht = frame_ht * local_ht
+       
+    if frame_row['Origin'] == 'yes': # This is an orgin in world co-ords, end of the line.
+        return combined_ht * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)-off_theta_z]) # i dont like this but sure 
+    else:
+        # nothing is defined under two local transforms so not really nessesary to do recursive (readibility) to compute the parent global transform
+        perant_rows = frame_df[
+                (frame_df['Fixture'] == frame_row['Fixture'])
+                & (frame_df['Frame'] == 'world')
+                & (frame_df['Origin'].str.lower() == 'yes')
+            ]
+    
+        perant_key = perant_rows.iloc[0]['Key']
+        return get_global_frame(frame_df, perant_key) * combined_ht  * tool_off * tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)-off_theta_z]) # i dont like this but sure 
+
+
+
+
+
+
+
+def generate_circular_path(initial_pose, rot_c_pose, rotation_deg, n_steps=2, spin_tool = True):
+    """
+    Generate a list of poses by rotating initial_pose around rot_c_pose along global Z axis.
+
+    Args:
+        initial_pose (4x4 np.array): Initial pose HT matrix.
+        rot_c_pose (4x4 np.array): Center of rotation HT matrix.
+        rotation_deg (float): Total rotation angle in degrees.
+        n_steps (int): Number of discrete steps in the path.
+
+    Returns:
+        list of 4x4 np.array: List of HT matrices representing the path.
+    """
+    poses = []
+    angle_step = np.deg2rad(rotation_deg) / n_steps
+  
+    # Extract the rotation center position
+    rotated_center = Pose_2_TxyzRxyz(rot_c_pose)
+    rot_c_pose = TxyzRxyz_2_Pose([rotated_center[0],rotated_center[1],rotated_center[2], 0,0,0])
+
+    for i in range(n_steps + 1):
+        angle = angle_step * i
+        z_spin = TxyzRxyz_2_Pose([0,0,0,0,0,angle if not spin_tool else 0])
+        # Create rotation matrix around Z axis
+        Rz = TxyzRxyz_2_Pose([0,0,0,0,0,angle])
+
+        # Move initial_pose to rotation center frame
+        pose_in_center = robomath.invH(rot_c_pose) * initial_pose
+
+        # Rotate pose around Z axis by angle
+        rotated_pose_in_center = Rz * pose_in_center
+
+        # Transform back to global frame
+        rotated_pose = rot_c_pose * rotated_pose_in_center * z_spin
+
+        poses.append(rotated_pose)
+
+    return poses
+
+if __name__ == "__main__":
+    # print out every HT resulting from pose(frames, index for index in frames) in form copyable into latex 
+
+    #form should be HT_{frame}^{perant frame} =     \begin{bmatrix} ****ht martix **** \end{bmatrix}
+
+    
+    frames = create_points_df()
+    (pose(frames,idx.PUQ, tool=idx.Rancillio_Basket_Tool_Base))
+
+    latex_rows = []
+    for i, row in frames.iterrows():
+        if row['Origin'] == 'yes' and row['Frame'] == 'world':
+            parent_key = 'World'
+            location_str = str(row['Location']).replace('_', r'\_')
+
+            H = pose(frames, row['Key'])
+            H = H.toNumpy()
+            latex_matrix = "\\begin{bmatrix}\n" + "\\\\\n".join([
+                " & ".join([f"{val:.3f}" for val in r]) for r in H
+            ]) + "\n\\end{bmatrix}"
+
+            lhs = f"$HT_{{\\text{{{location_str}}}}}^{{\\text{{{parent_key}}}}}$"
+            rhs = f"${latex_matrix}$"
+
+            latex_rows.append(f"{lhs} & {rhs} \\\\")
+
+        if row['Origin'] == 'no' and  row['Frame'] != 'world' and (row['Key'] < 47 or row['Key'] >= 56) and row['Key'] < 63: # avoid tools
+            parent_key = str(row['Fixture']).replace('_', r'\_')
+            location_str = str(row['Location']).replace('_', r'\_')
+            H = pose(frames, row['Key'])
+            H = H.toNumpy()
+            latex_matrix = "\\begin{bmatrix}\n" + "\\\\\n".join([
+                " & ".join([f"{val:.3f}" for val in r]) for r in H
+            ]) + "\n\\end{bmatrix}"
+
+            lhs = f"$HT_{{\\text{{{location_str}}}}}^{{\\text{{{parent_key}}}}}$"
+            rhs = f"${latex_matrix}$"
+
+            latex_rows.append(f"{lhs} & {rhs} \\\\")
+
+        if row['Origin'] == 'no' and  row['Frame'] != 'world' and row['Key'] >= 47 and row['Key'] <56: # tools
+            tool = row['Key']
+            if tool == 55: #specal case for placing the basket of the rancillo on somthing
+                base_key = tool
+                base_row = frames.loc[frames['Key'] == base_key].iloc[0]
+                rotation_key = 63
+                rotation_row = frames.loc[frames['Key'] == rotation_key].iloc[0]
+                tool_ht = TxyzRxyz_2_Pose([
+                    base_row['X'],
+                    base_row['Y'],
+                    base_row['Z'],
+                    base_row.get('Euler_Rx', 0), # + np.rad2deg(rotation_row)
+                    base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row['X']),
+                    base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
+            elif tool == 63: #specal case for placing the base of the rancillo on somthing
+                base_key = 55 # basket  
+                rotation_key = 63# handle rotation
+                depth_key = 64 # depth
+                base_row = frames.loc[frames['Key'] == base_key].iloc[0]
+                rotation_row = frames.loc[frames['Key'] == rotation_key].iloc[0]
+                depth_row = frames.loc[frames['Key'] == depth_key].iloc[0]
+                # print((depth_row['X']))
+                # print((rotation_row['X']))
+                tool_ht = TxyzRxyz_2_Pose([
+                    base_row['X'] - depth_row['X'],
+                    # base_row['X'],
+                    base_row['Y'],
+                    base_row['Z'],
+                    base_row.get('Euler_Rx', 0), 
+                    base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row["X"]),
+                    base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
+            else:
+                tcp_key = tool
+                tool_row = frames.loc[frames['Key'] == tcp_key].iloc[0]
+                tool_ht = TxyzRxyz_2_Pose([
+                tool_row['X'],
+                tool_row['Y'],
+                tool_row['Z'],
+                tool_row.get('Euler_Rx', 0),
+                tool_row.get('Euler_Ry', 0),
+                tool_row.get('Euler_Rz', 0) ]) #- np.deg2rad(50)
+            tool_ht = tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)])
+
+            parent_key = "Tool Connector"
+            location_str = str(row['Location']).replace('_', r'\_')
+            # print(row['Key'])
+            H = tool_ht.toNumpy()
+            latex_matrix = "\\begin{bmatrix}\n" + "\\\\\n".join([
+                " & ".join([f"{val:.3f}" for val in r]) for r in H
+            ]) + "\n\\end{bmatrix}"
+
+            lhs = f"$HT_{{\\text{{{location_str}}}}}^{{\\text{{{parent_key}}}}}$"
+            rhs = f"${latex_matrix}$"
+
+            latex_rows.append(f"{lhs} & {rhs} \\\\")
+
+
+
+
+
+
+    latex_table = r"""
+    \noindent
+    \setlength{\arrayrulewidth}{0.8pt}  % Border thickness
+    \setlength{\extrarowheight}{4pt}    % Make rows taller
+
+    \begin{tabularx}{\textwidth}{|X|X|}
+    \hline
+    \textbf{Transform} & \textbf{Matrix} \\
+    \hline
+    """
+    latex_table += "\n\\hline\n".join(latex_rows)
+    latex_table += r"""
+    \hline
+    \end{tabularx}
+    """
+
+    print(latex_table)
+
+
+    circle_start_pose = pose(frames, idx.WDT_Spinner, tool=idx.Mazzer_Tip_Tool, theta_x=-180, off_z=6)
+    circular_path = generate_circular_path(circle_start_pose, pose(frames, idx.WDT), 180, n_steps=2, spin_tool=False)
+
+    # print(circle_start_pose.toNumpy())
+    for pose in circular_path:
+        H = pose.toNumpy()
+        latex_matrix = "\\begin{bmatrix}\n" + "\\\\\n".join([
+                " & ".join([f"{val:.3f}" for val in r]) for r in H
+            ]) + "\n\\end{bmatrix}"
+        print(latex_matrix)

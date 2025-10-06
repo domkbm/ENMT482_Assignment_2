@@ -1,3 +1,123 @@
+if __name__ == "__main__":
+    # print out every HT resulting from pose(frames, index for index in frames) in form copyable into latex 
+
+    #form should be HT_{frame}^{perant frame} =     \begin{bmatrix} ****ht martix **** \end{bmatrix}
+
+    
+    frames = create_points_df()
+    (pose(frames,idx.PUQ, tool=idx.Rancillio_Basket_Tool_Base))
+
+    latex_rows = []
+    for i, row in frames.iterrows():
+        if row['Origin'] == 'yes' and row['Frame'] == 'world':
+            parent_key = 'World'
+            location_str = str(row['Location']).replace('_', r'\_')
+
+            H = pose(frames, row['Key'])
+            H = H.toNumpy()
+            latex_matrix = "\\begin{bmatrix}\n" + "\\\\\n".join([
+                " & ".join([f"{val:.3f}" for val in r]) for r in H
+            ]) + "\n\\end{bmatrix}"
+
+            lhs = f"$HT_{{\\text{{{location_str}}}}}^{{\\text{{{parent_key}}}}}$"
+            rhs = f"${latex_matrix}$"
+
+            latex_rows.append(f"{lhs} & {rhs} \\\\")
+
+        if row['Origin'] == 'no' and  row['Frame'] != 'world' and (row['Key'] < 47 or row['Key'] >= 56) and row['Key'] < 63: # avoid tools
+            parent_key = str(row['Fixture']).replace('_', r'\_')
+            location_str = str(row['Location']).replace('_', r'\_')
+            H = pose(frames, row['Key'])
+            H = H.toNumpy()
+            latex_matrix = "\\begin{bmatrix}\n" + "\\\\\n".join([
+                " & ".join([f"{val:.3f}" for val in r]) for r in H
+            ]) + "\n\\end{bmatrix}"
+
+            lhs = f"$HT_{{\\text{{{location_str}}}}}^{{\\text{{{parent_key}}}}}$"
+            rhs = f"${latex_matrix}$"
+
+            latex_rows.append(f"{lhs} & {rhs} \\\\")
+
+        if row['Origin'] == 'no' and  row['Frame'] != 'world' and row['Key'] >= 47 and row['Key'] <56: # tools
+            tool = row['Key']
+            if tool == 55: #specal case for placing the basket of the rancillo on somthing
+                base_key = tool
+                base_row = frames.loc[frames['Key'] == base_key].iloc[0]
+                rotation_key = 63
+                rotation_row = frames.loc[frames['Key'] == rotation_key].iloc[0]
+                tool_ht = TxyzRxyz_2_Pose([
+                    base_row['X'],
+                    base_row['Y'],
+                    base_row['Z'],
+                    base_row.get('Euler_Rx', 0), # + np.rad2deg(rotation_row)
+                    base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row['X']),
+                    base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
+            elif tool == 63: #specal case for placing the base of the rancillo on somthing
+                base_key = 55 # basket  
+                rotation_key = 63# handle rotation
+                depth_key = 64 # depth
+                base_row = frames.loc[frames['Key'] == base_key].iloc[0]
+                rotation_row = frames.loc[frames['Key'] == rotation_key].iloc[0]
+                depth_row = frames.loc[frames['Key'] == depth_key].iloc[0]
+                # print((depth_row['X']))
+                # print((rotation_row['X']))
+                tool_ht = TxyzRxyz_2_Pose([
+                    base_row['X'] - depth_row['X'],
+                    # base_row['X'],
+                    base_row['Y'],
+                    base_row['Z'],
+                    base_row.get('Euler_Rx', 0), 
+                    base_row.get('Euler_Ry', 0) - np.deg2rad(rotation_row["X"]),
+                    base_row.get('Euler_Rz', 0)]) #- np.deg2rad(50) 
+            else:
+                tcp_key = tool
+                tool_row = frames.loc[frames['Key'] == tcp_key].iloc[0]
+                tool_ht = TxyzRxyz_2_Pose([
+                tool_row['X'],
+                tool_row['Y'],
+                tool_row['Z'],
+                tool_row.get('Euler_Rx', 0),
+                tool_row.get('Euler_Ry', 0),
+                tool_row.get('Euler_Rz', 0) ]) #- np.deg2rad(50)
+            tool_ht = tool_ht * TxyzRxyz_2_Pose([0,0,0,0,0,np.deg2rad(50)])
+
+            parent_key = "Tool Connector"
+            location_str = str(row['Location']).replace('_', r'\_')
+            # print(row['Key'])
+            H = tool_ht.toNumpy()
+            latex_matrix = "\\begin{bmatrix}\n" + "\\\\\n".join([
+                " & ".join([f"{val:.3f}" for val in r]) for r in H
+            ]) + "\n\\end{bmatrix}"
+
+            lhs = f"$HT_{{\\text{{{location_str}}}}}^{{\\text{{{parent_key}}}}}$"
+            rhs = f"${latex_matrix}$"
+
+            latex_rows.append(f"{lhs} & {rhs} \\\\")
+
+
+
+
+
+
+    latex_table = r"""
+    \noindent
+    \setlength{\arrayrulewidth}{0.8pt}  % Border thickness
+    \setlength{\extrarowheight}{4pt}    % Make rows taller
+
+    \begin{tabularx}{\textwidth}{|X|X|}
+    \hline
+    \textbf{Transform} & \textbf{Matrix} \\
+    \hline
+    """
+    latex_table += "\n\\hline\n".join(latex_rows)
+    latex_table += r"""
+    \hline
+    \end{tabularx}
+    """
+
+    print(latex_table)
+
+
 
 arc_single = tf.generate_circular_path(spin_start_pose, tf.pose(points_df, id.Rancillio_Gasket), 45)
 def basket_spin_fwd():
