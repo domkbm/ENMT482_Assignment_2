@@ -39,7 +39,7 @@ import indices as id
 import transforms as tf
 
 GROUNDS_WEIGHT_TARGET = 19.9
-CORRECT_WEIGHT = 32
+CORRECT_WEIGHT = 31.9
 
 
 #DOM 
@@ -356,7 +356,7 @@ def H(): #TODO h) Release the Rancilio tool and close the WDT fixture.
     UR5.MoveL(tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, off_z=50), blocking=True)
 
 def I(): #TODO i) Use the Mazzer tool to turn the WDT rotor five full revolutions.
-    REVOLUTIONS = 2
+    REVOLUTIONS = 5
     tls.mazzer_tool_attach_l_ati()
     UR5.MoveL(tf.pose(points_df, id.WDT_Spinner, tool=id.Mazzer_Tip_Tool, theta_x=-180, off_z=20), blocking=True)
     circle_start_pose = tf.pose(points_df, id.WDT_Spinner, tool=id.Mazzer_Tip_Tool, theta_x=-180, off_z=6)
@@ -387,8 +387,9 @@ def K(): #TODO k) Place the Rancilio tool into the PUQ fixture, and wait 2 secon
     # time.sleep(10000)
     UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, off_x=0, off_z=-2), blocking=True)
     time.sleep(2)
-    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=70, off_z=0), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=65, off_z=0), blocking=True)
     
+
 
 ####HELPER FCNS TO SPIN THE BASKET IN THE MACHINE#####
 spin_start_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=45)
@@ -413,7 +414,6 @@ def L(): #TODO l) Remove the Rancilio tool from the PUQ fixture, and insert it i
     run_visual_program(RDK, 'Show_Rancilio_Scale_Cup', blocking=True)
     spin = tf.generate_circular_path(UR5.Pose(), robomath.TxyzRxyz_2_Pose([0,0,0,0,0,0]), -100)
     UR5.MoveC(spin[1], spin[-1])
-    time.sleep(1)
     # UR5.MoveJ([-20.420000, -87.420000, 136.600000, -50.120000, -32.130000, 140.560000])
     UR5.MoveJ([55.402141, -79.883086, 123.320907, -45.487419, 130.794240, 138.924653])
     # UR5.MoveL(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-100,0,0,0]))
@@ -423,14 +423,16 @@ def L(): #TODO l) Remove the Rancilio tool from the PUQ fixture, and insert it i
     basket_spin_fwd_linear()
     tls.student_tool_detach()
     rancilio_tool.setVisible(False,False) #put it off the toolhead (visual)
-    run_visual_program(RDK, 'Show_Rancilio_Rancilio_Tool_Rotated', blocking=True) #put the tool in the machine (visual) 
+    run_visual_program(RDK, 'Show_Rancilio_Rancilio_Tool_Rotated', blocking=True) #put the tool in the machine (visual)
+    final_pose =  UR5.Pose() 
     UR5.MoveL(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-50,0,0,0])) # move away from tool
+    return final_pose
 
-def S(): #TODO s) Remove the Rancilio tool from the group head.
+def S(final_pose): #TODO s) Remove the Rancilio tool from the group head.
     UR5.MoveJ([108.190000, -105.000000, 86.540000, -73.770000, -89.990000, -206.710000])
     UR5.MoveJ([41.350000, -83.480000, 143.290000, -62.040000, 61.750000, 141.390000])
-    UR5.MoveJ(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-50,0,0,0])) # move away from tool
-    UR5.MoveL(spin_end_pose)
+    UR5.MoveJ(final_pose * robomath.TxyzRxyz_2_Pose([0,0,-50,0,0,0])) # move away from tool
+    UR5.MoveL(final_pose)
     tls.student_tool_attach()
     rancilio_tool.setVisible(True,False) #put it on the toolhead (visual)
     run_visual_program(RDK, 'Hide_Rancilio_Rancilio_Tool_Rotated', blocking=True) #put the tool in the machine (visual) 
@@ -623,31 +625,31 @@ def R(): #Use the cup tool to carefully pick up the cup of coffee and place it i
 
 
 
-# A()
-# B()
-# C()
-# #D()
-# D_sweep()
-# D_alt()
-# E()
-# F()
-# G()
-# H()
-# I()
+A()
+B()
+C()
+#D()
+D_sweep()
+D_alt()
+E()
+F()
+G()
+H()
+I()
 
 
-# M()
-# N()
+M()
+N()
 
-# J()
-UR5.MoveJ([95.034247, -95.178398, 149.103879, -50.758080, -39.550311, 137.361298])
+J()
+# UR5.MoveJ([95.034247, -95.178398, 149.103879, -50.758080, -39.550311, 137.361298])
 K()
-L()
+final_pose = L()
 
 O()
 P()
 Q()
-S()
+S(final_pose)
 
 T()
 U()
