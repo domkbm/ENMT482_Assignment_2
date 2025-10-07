@@ -38,8 +38,8 @@ import tools
 import indices as id
 import transforms as tf
 
-GROUNDS_WEIGHT_TARGET = 19.9
-CORRECT_WEIGHT = 31.9
+GROUNDS_WEIGHT_TARGET = 19.7
+CORRECT_WEIGHT = 31.4
 
 
 #DOM 
@@ -190,7 +190,7 @@ def C(): #TODO c) Use the Mazzer tool to turn the Mazzer on, wait 15s, and turn 
     the_time = time.time()
     UR5.MoveJ(tf.pose(points_df, id.Mazzer_On_Button, tool=id.Mazzer_Tip_Tool, pos_y=10,theta_y=-110, off_z= 0), blocking=True)
     UR5.MoveJ(tf.pose(points_df, id.Mazzer_Off_Button, tool=id.Mazzer_Tip_Tool, pos_y=15,theta_y=-115, off_x = 10, off_z=0), blocking=True) #go to off button
-    while (time.time() - the_time) < 1: # wait 15 secs
+    while (time.time() - the_time) < 15: # wait 15 secs
         # print(f"Waited {time.time() - the_time:.1f} s")
         pass # do nothing
     UR5.MoveJ(tf.pose(points_df, id.Mazzer_Off_Button, tool=id.Mazzer_Tip_Tool, pos_y=15,theta_y=-115, off_x = 10, off_z=-10), blocking=True) #push 
@@ -270,7 +270,7 @@ def D_sweep(): # the first two pulls smooth
     UR5.MoveJ(tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 9, off_y= 30, off_z = -12)) #-190
     circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 8, off_y= 30, off_z = -7) #-170
     circle_start_pose_end = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 8, off_y= 30, off_z = -15) #-170
-    circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=3)
+    circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -67, n_steps=3)
     mazzer_scale.tare()
     i = 0
     while i < 2:
@@ -285,12 +285,12 @@ def D_alt(): #blocking version
     UR5.MoveJ(tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 9, off_y= 30, off_z = -12))
     circle_start_pose = tf.pose(points_df, id.Mazzer_Lever, tool=id.Mazzer_Bar_Tool, theta_x=-200, off_x= 8, off_y= 30, off_z = -7)
     UR5.MoveJ(circle_start_pose, blocking=True)
-    circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=20)
+    circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.Mazzer), -65, n_steps=45)
     reversed_circular_path = circular_path.copy()
     reversed_circular_path = list(reversed(reversed_circular_path))
     reversed_circular_path.append(circle_start_pose)
     reversed_circular_path = reversed_circular_path[1:]
-    # mazzer_scale.tare()
+    mazzer_scale.tare()
     weight = mazzer_scale.read()
     #weight_target = weight + GROUNDS_WEIGHT_TARGET # alt method
     while weight < GROUNDS_WEIGHT_TARGET:
@@ -331,19 +331,23 @@ def E():# TODO e) Use the Mazzer tool to lock the Mazzer Scale.
 
 def F(): #TODO f) Remove the Rancilio tool from the Mazzer.
     tls.mazzer_tool_detach_l_ati()
-    UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
+    # UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, 140.000000])#intermeidate point to avoid the mazzer
+    UR5.MoveJ([146.390000, -80.000000, 137.570000, -62.720000, 116.640000, -206.18])#intermeidate point to avoid the mazzer
+
     UR5.MoveL(basket_drop_pose, blocking=True)
     tls.student_tool_attach()
     run_visual_program(RDK, 'Hide_Mazzer_Scale_Rancilio_Tool', blocking=True) #dissapear the tool from the scales (visual)
     rancilio_tool.setVisible(True,False) #put it on the toolhead (visual)
     UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,25,0,0,0]) * basket_drop_pose, blocking=True)
 
+
+
 above_wdt_pose = tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, off_x=-50, pos_y = 1)
 wdt_pose = tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, pos_y = 1)
 
 def G(): #TODO g) Open the WDT fixture, and place the Rancilio tool into the WDT fixture.
     tls.wdt_open()
-    UR5.MoveJ([122.700000, -94.510000, 152.060000, -59.680000, 52.670000, 141.300000])
+    UR5.MoveJ([122.700000, -94.510000, 152.060000, -59.680000, 52.670000, -219.70])
     UR5.MoveL(above_wdt_pose, blocking=True)
     UR5.MoveL(wdt_pose, blocking=True)
 
@@ -367,10 +371,9 @@ def I(): #TODO i) Use the Mazzer tool to turn the WDT rotor five full revolution
         # time.sleep(0.5)
         UR5.MoveC(circular_path[4*i+3], circular_path[4*i+4], blocking=True)
 
-
 def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WDT fixture.
     tls.wdt_open()
-    UR5.MoveJ([122.700000, -94.510000, 152.060000, -59.680000, 52.670000, 141.300000])
+    UR5.MoveJ([122.700000, -94.510000, 152.060000, -59.680000, 52.670000, -254.44])
     pick_up_entry = tf.pose(points_df, id.WDT, tool=id.Rancillio_Basket_Tool_Base, theta_y=-90, off_z=50)
     pick_up_entry = robomath.UR_2_Pose(robomath.Pose_2_UR(pick_up_entry))
     UR5.MoveL(pick_up_entry, blocking=True)
@@ -379,7 +382,7 @@ def J():#TODO j) Open the WDT fixture, remove the Rancilio tool and close the WD
     run_visual_program(RDK, 'Hide_WDT_Rancilio_Tool', blocking=True) #tool ouff the wdt (visual)
     rancilio_tool.setVisible(True,False) #put it back on the toolhead (visual)
     UR5.MoveL(above_wdt_pose)
-    UR5.MoveJ([110.110000, -93.140000, 147.240000, -51.240000, 14.470000, 140.000000])
+    UR5.MoveJ([110.110000, -93.140000, 147.240000, -51.240000, 14.470000,-219.70])
     tls.wdt_shut()
 
 def K(): #TODO k) Place the Rancilio tool into the PUQ fixture, and wait 2 seconds while the machine tamps the coffee grounds.
@@ -389,7 +392,6 @@ def K(): #TODO k) Place the Rancilio tool into the PUQ fixture, and wait 2 secon
     time.sleep(2)
     UR5.MoveL(tf.pose(points_df, id.PUQ_Clamp, tool=id.Rancillio_Basket_Tool, theta_x = -90,theta_y=-90, theta_z=-90, pos_x=65, off_z=0), blocking=True)
     
-
 
 ####HELPER FCNS TO SPIN THE BASKET IN THE MACHINE#####
 spin_start_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=45)
@@ -417,7 +419,7 @@ def L(): #TODO l) Remove the Rancilio tool from the PUQ fixture, and insert it i
     spin = tf.generate_circular_path(UR5.Pose(), robomath.TxyzRxyz_2_Pose([0,0,0,0,0,0]), -100)
     UR5.MoveC(spin[1], spin[-1])
     # UR5.MoveJ([-20.420000, -87.420000, 136.600000, -50.120000, -32.130000, 140.560000])
-    UR5.MoveJ([55.402141, -79.883086, 123.320907, -45.487419, 130.794240, 138.924653])
+    UR5.MoveJ([55.402141, -79.883086, 123.320907, -45.487419, 130.794240, -222.98])
     # UR5.MoveL(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-100,0,0,0]))
     # time.sleep(1000)
     UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,-20,0,0,0]) * spin_start_pose)
@@ -431,8 +433,9 @@ def L(): #TODO l) Remove the Rancilio tool from the PUQ fixture, and insert it i
     return final_pose
 
 def S(final_pose): #TODO s) Remove the Rancilio tool from the group head.
-    UR5.MoveJ([108.190000, -105.000000, 86.540000, -73.770000, -89.990000, -206.710000])
-    UR5.MoveJ([41.350000, -83.480000, 143.290000, -62.040000, 61.750000, 141.390000])
+    final_pose = robomath.TxyzRxyz_2_Pose([0,0,-2,0,0,0]) * final_pose * robomath.TxyzRxyz_2_Pose([-1,0,0,0,0,0])
+    UR5.MoveJ([108.190000, -105.000000, 86.540000, -73.770000, -89.990000, -206.18])
+    UR5.MoveJ([41.350000, -83.480000, 143.290000, -62.040000, 61.750000, -206.18])
     UR5.MoveJ(final_pose * robomath.TxyzRxyz_2_Pose([0,0,-50,0,0,0])) # move away from tool
     UR5.MoveL(final_pose)
     tls.student_tool_attach()
@@ -448,42 +451,41 @@ def M():# #TODO m) Use the Mazzer tool to operate the cup dispenser.
     # UR5.MoveJ([71.680000, -64.390000, 129.270000, -262.950000, -88.330000, 214.230000]) #another intermeidiate point so we dont hit the tool holder
 
     UR5.MoveJ([158.610000, -98.450000, 102.380000, -93.850000, -89.510000, -241.250000])
-    spin = tf.generate_circular_path(UR5.Pose(), robomath.TxyzRxyz_2_Pose([0,0,0,0,0,0]), -160)
+    spin = tf.generate_circular_path(UR5.Pose(), robomath.TxyzRxyz_2_Pose([0,0,0,0,0,0]), -140)
     UR5.MoveC(spin[1], spin[-1])
 
 
     # UR5.MoveJ([9.594445, -72.709382, 129.539942, -234.755204, -96.626572, 259.018886])
-    UR5.MoveJ([9.590000, -92.710000, 149.540000, -234.760000, -96.630000, -259.020000])
-    UR5.MoveJ([5.000000, -70.000000, 136.000000, -244.750000, -96.630000, 0])
+    # UR5.MoveJ([9.590000, -92.710000, 149.540000, -234.760000, -96.630000, -259.020000])
+    # UR5.MoveJ([5.000000, -70.000000, 136.000000, -244.750000, -96.630000, 0])
+    # UR5.MoveJ([8.559499, -78.508850, 140.672478, -242.039354, -98.820301, -39.734004])
+    UR5.MoveJ([8.100552, -77.138453, 138.635954, -241.374905, -98.358935, -241.25])
 
-
-    UR5.MoveJ(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50, off_theta_z=180), blocking=True)
     print("move to above the latch")
-    UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, off_z=1), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, off_z=1, off_theta_z=180), blocking=True)
     print("into latch")
-    UR5.MoveL(tf.pose(points_df, id.Cup_Open, tool=id.Mazzer_Tip_Tool), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Cup_Open, tool=id.Mazzer_Tip_Tool, off_theta_z=180), blocking=True)
     print("open") 
     run_visual_program(RDK, 'Show_Cup_Dispenser_Open')
-    UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, off_z=1), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, off_z=1, off_theta_z=180), blocking=True)
     print("close")
     run_visual_program(RDK, 'Show_Cup_Dispenser_Shut')
-    UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50, off_theta_z=180), blocking=True)
     print("move to above the latch")
     run_visual_program(RDK, 'Show_Cup_Dispenser_Cup')
     # UR5.MoveJ([47.010000, -72.190000, 130.980000, -238.790000, -96.780000, 269.990000]) #another intermeidiate point so we dont hit the cup stack
-    UR5.MoveJ(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-25,0,0,0]))
+    UR5.MoveJ(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-30,0,0,0]))
     UR5.MoveJ([19.490000, -102.380000, 102.600000, -89.470000, -93.710000, 54.370000])
     tls.mazzer_tool_detach_l_ati() 
 
 def N():
     run_visual_program(RDK, 'Show_Cup_Dispenser_Cup')
     tls.cup_tool_attach_l_ati()
-    UR5.MoveJ([43.900000, -112.200000, 79.020000, -47.800000, -96.590000, -229.240000])
-    UR5.MoveJ([-21.230000, -94.640000, 78.390000, -69.030000, 95.230000, -220.420000])
-    UR5.MoveJ([-21.230000, -98.640000, 138.390000, -37.030000, 95.230000, -220.430000])
+    UR5.MoveJ([5.460000, -100.240000, 142.060000, -104.440000, 72.590000, -228.360000])
+    UR5.MoveJ([10.467479, -109.982887, 144.384700, -38.700172, 91.493676, -223.698056])
+    UR5.MoveJ([10.324529, -100.869579, 139.059794, -38.199707, 100.453959, -219.606936])
     tls.cup_tool_open_ur5()
-    UR5.MoveJ([6.780000, -98.640000, 138.390000, -37.030000, 95.230000, -220.430000])
-
     UR5.MoveL(tf.pose(points_df, id.Cup_Coffee, tool=id.Cup_Holder_Top_Face_Centre_Open, pos_x=-25), blocking=True)
     tls.cup_tool_shut_ur5()
     run_visual_program(RDK, 'Hide_Cup_Dispenser_Cup')
@@ -564,7 +566,7 @@ def Q(): #Use the Mazzer tool to lock the Rancilio Scale.
 
 def T(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture silicone brush, and actuate for 5s.
 
-    UR5.MoveJ([72.987288, -86.259237, 131.698950, -48.274149, 148.375904, 137.764821])
+    UR5.MoveJ([72.987288, -86.259237, 131.698950, -48.274149, 148.375904, -225.53])
     rancilio_tool.setVisible(True,False) #show it on the toolhead (visual)
     UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool, pos_z = 100, pos_y=75, theta_z=90, theta_x=90), blocking=True)
     UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool, pos_z = 100, pos_y=0, theta_z=90, theta_x=90), blocking=True)
@@ -643,7 +645,7 @@ A()
 B()
 C()
 #D()
-D_sweep()
+#D_sweep()
 D_alt()
 E()
 F()
@@ -655,7 +657,6 @@ M()
 N()
 
 J()
-UR5.MoveJ([95.034247, -95.178398, 149.103879, -50.758080, -39.550311, 137.361298])
 K()
 final_pose = L()
 
@@ -671,9 +672,9 @@ V()
 R()
 
 
-# robot_program = RDK.Item("Reset_Simulation_L", ITEM_TYPE_PROGRAM)
-# robot_program.RunCode()
-# robot_program.WaitFinished()
+robot_program = RDK.Item("Reset_Simulation_L", ITEM_TYPE_PROGRAM)
+robot_program.RunCode()
+robot_program.WaitFinished()
 
 
 
