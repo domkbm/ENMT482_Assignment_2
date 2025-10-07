@@ -126,7 +126,7 @@ def run_visual_program(RDK, name, blocking=True):
 
 
 RDK = Robolink()
-RDK.setRunMode(RUNMODE_RUN_ROBOT)
+RDK.setRunMode(RUNMODE_SIMULATE)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
 mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
@@ -495,7 +495,7 @@ def N():
     tls.cup_tool_open_ur5()
     run_visual_program(RDK, 'Show_Rancilio_Scale_Cup', blocking=True)
     run_visual_program(RDK, 'Hide_Cup_Tool_Cup', blocking=True) 
-    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=77, pos_x=-150, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=77, pos_x=-150, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
     
     tls.cup_tool_shut_ur5()
     tls.cup_tool_detach_l_ati()
@@ -570,7 +570,7 @@ def T(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture sil
     # HOW DO I FIX THIS - WORKS IN SIM BUT NOT IRL
     UR5.MoveL([255.520000, -89.820000, 244.110000, -152.330000, -104.170000, -40.620000], blocking=True)
 
-    UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool, pos_z = -10, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool, pos_z = -20, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
     time.sleep(5) #actuate for 5s
 
 
@@ -578,7 +578,9 @@ def T(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture sil
 
 def U(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture bristle brush, and actuate for 5s.
     UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool, pos_z = 20, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
-    UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool, pos_z = -10, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
+
+    
+    UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool, pos_z = -20, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
     time.sleep(5) #actuate for 5s
 
 def V(): # Return the Rancilio tool to the tool stand.
@@ -588,6 +590,8 @@ def V(): # Return the Rancilio tool to the tool stand.
 def R(): #Use the cup tool to carefully pick up the cup of coffee and place it in the customer zone.
     # PART R - STARTED
     tls.cup_tool_attach_l_ati()
+
+    UR5.MoveJ([-6.092481, -100.605037, 126.288830, -45.210897, 1.695916, -215.808742])
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=74, pos_x=-100, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
     
     tls.cup_tool_open_ur5()
@@ -599,9 +603,10 @@ def R(): #Use the cup tool to carefully pick up the cup of coffee and place it i
 
     tls.cup_tool_shut_ur5()
     run_visual_program(RDK, 'Hide_Rancilio_Scale_Cup', blocking=True) #hide the cup on the scales
+    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=77, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
 
     run_visual_program(RDK, 'Show_Cup_Tool_Cup', blocking=True) #hide the cup on the scales
-    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=76, pos_x=-100, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=77, pos_x=-100, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
 
 
     UR5.MoveJ([-48.776840, -113.520569, 142.795718, -28.628641, -0.576878, -220.638884])
@@ -611,10 +616,12 @@ def R(): #Use the cup tool to carefully pick up the cup of coffee and place it i
     UR5.MoveJ([-91.037149, -104.362910, 148.652730, -41.925520, -0.572249, -222.344276])
 
     tls.cup_tool_open_ur5()
-
     run_visual_program(RDK, 'Hide_Cup_Tool_Cup', blocking=True) #hide the cup on the scales
 
+    UR5.MoveJ([-91.037149, -104.362910, 148.652730, -41.925520, -0.572249, -222.344276])
+
     UR5.MoveJ([-121.815757, -119.327302, 147.901424, -28.561688, -31.335721, -219.990653])
+
     tls.cup_tool_shut_ur5()
     UR5.MoveJ([-121.815757, -126.554662, 119.721341, 6.845755, -31.335721, -219.990653])
 
