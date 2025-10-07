@@ -126,7 +126,7 @@ def run_visual_program(RDK, name, blocking=True):
 
 
 RDK = Robolink()
-RDK.setRunMode(RUNMODE_RUN_ROBOT)
+RDK.setRunMode(RUNMODE_SIMULATE)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
 mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
@@ -639,22 +639,22 @@ def R(): #Use the cup tool to carefully pick up the cup of coffee and place it i
 
 
 
-#A()
-#B()
-#C()
-# #D()
-#D_sweep()
-#D_alt()
-#E()
-#F()
-#G()
-#H()
-#I()
+A()
+B()
+C()
+#D()
+D_sweep()
+D_alt()
+E()
+F()
+G()
+H()
+I()
 
-#M()
-#N()
+M()
+N()
 
-#J()
+J()
 UR5.MoveJ([95.034247, -95.178398, 149.103879, -50.758080, -39.550311, 137.361298])
 K()
 final_pose = L()
