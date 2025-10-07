@@ -30,8 +30,8 @@ from time import sleep
 from robodk.robolink import *
 import robodk.robomath as rm
 
-from robodk.robodialogs import *
-from modbus_scale_client import modbus_scale_client
+# from robodk.robodialogs import *
+# from modbus_scale_client import modbus_scale_client
 
 
 import tools
@@ -126,21 +126,21 @@ def run_visual_program(RDK, name, blocking=True):
 
 
 RDK = Robolink()
-RDK.setRunMode(RUNMODE_RUN_ROBOT)
+RDK.setRunMode(RUNMODE_SIMULATE)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
-mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
-if mazzer_scale.server_exists() == False:
-    if RUNMODE_SIMULATE:
-        print("Mazzer scale not detected, output will be simulated.")
-    else:
-        RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
-rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
-if mazzer_scale.server_exists() == False:
-    if RUNMODE_SIMULATE:
-        print("Rancilio scale not detected, output will be simulated.")
-    else:
-        RDK.ShowMessage("Rancilio scale not detected, output will be simulated.")
+# mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
+# if mazzer_scale.server_exists() == False:
+#     if RUNMODE_SIMULATE:
+#         print("Mazzer scale not detected, output will be simulated.")
+#     else:
+#         RDK.ShowMessage("Mazzer scale not detected, output will be simulated.")
+# rancilio_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_RANCILIO_3)
+# if mazzer_scale.server_exists() == False:
+#     if RUNMODE_SIMULATE:
+#         print("Rancilio scale not detected, output will be simulated.")
+#     else:
+#         RDK.ShowMessage("Rancilio scale not detected, output will be simulated.")
 
 mazzer_tool = RDK.Item("Mazzer_Tool_(UR5)", ITEM_TYPE_TOOL) 
 rancilio_tool = RDK.Item("Rancilio_Tool_(UR5)", ITEM_TYPE_TOOL) 
@@ -622,36 +622,41 @@ def R(): #Use the cup tool to carefully pick up the cup of coffee and place it i
 
 
 
-A()
-B()
-C()
-#D()
-D_sweep()
-D_alt()
-E()
-F()
-G()
-H()
+# A()
+# B()
+# C()
+# #D()
+# D_sweep()
+# D_alt()
+# E()
+# F()
+# G()
+# H()
 I()
+circle_start_pose = tf.pose(points_df, id.WDT_Spinner, tool=id.Mazzer_Tip_Tool, theta_x=-180, off_z=6)
+circular_path = tf.generate_circular_path(circle_start_pose, tf.pose(points_df, id.WDT), 180, n_steps=2, spin_tool=False)
+for pose in circular_path:
+    UR5.MoveL(pose)
+    time.sleep(10)
 
 
-M()
-N()
+# M()
+# N()
 
-J()
-K()
-L()
+# J()
+# K()
+# L()
 
-O()
-P()
-Q()
-S()
+# O()
+# P()
+# Q()
+# S()
 
-T()
-U()
-V()
+# T()
+# U()
+# V()
 
-R()
+# R()
 
 
 # robot_program = RDK.Item("Reset_Simulation_L", ITEM_TYPE_PROGRAM)

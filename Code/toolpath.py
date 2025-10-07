@@ -393,6 +393,8 @@ def K(): #TODO k) Place the Rancilio tool into the PUQ fixture, and wait 2 secon
 
 ####HELPER FCNS TO SPIN THE BASKET IN THE MACHINE#####
 spin_start_pose = tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=45)
+#spin_start_pose = robomath.TxyzRxyz_2_Pose([0,0,-2,0,0,0]) * tf.pose(points_df, id.Rancillio_Gasket, tool=id.Rancillio_Basket_Tool, pos_z=0, theta_y=-90, off_theta_x=45)
+
 arc_many = tf.generate_circular_path(spin_start_pose, tf.pose(points_df, id.Rancillio_Gasket), 35, n_steps=24) # needs to be an even number
 spin_end_pose = arc_many[-1]
 
@@ -457,12 +459,12 @@ def M():# #TODO m) Use the Mazzer tool to operate the cup dispenser.
 
     UR5.MoveJ(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50), blocking=True)
     print("move to above the latch")
-    UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, off_z=1), blocking=True)
     print("into latch")
     UR5.MoveL(tf.pose(points_df, id.Cup_Open, tool=id.Mazzer_Tip_Tool), blocking=True)
     print("open") 
     run_visual_program(RDK, 'Show_Cup_Dispenser_Open')
-    UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, off_z=1), blocking=True)
     print("close")
     run_visual_program(RDK, 'Show_Cup_Dispenser_Shut')
     UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50), blocking=True)
@@ -495,7 +497,7 @@ def N():
     tls.cup_tool_open_ur5()
     run_visual_program(RDK, 'Show_Rancilio_Scale_Cup', blocking=True)
     run_visual_program(RDK, 'Hide_Cup_Tool_Cup', blocking=True) 
-    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=77, pos_x=-150, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=77, pos_x=-150, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
     
     tls.cup_tool_shut_ur5()
     tls.cup_tool_detach_l_ati()
@@ -553,7 +555,7 @@ def Q(): #Use the Mazzer tool to lock the Rancilio Scale.
     # Postion before unlocking scales
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5, pos_y=21.53, pos_z=0, theta_x = 125), blocking=True)
     # Flipping Ranccilio Scale Switch
-    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+20, pos_y=+25, pos_z=-25, theta_x = 135), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+20, pos_y=+25, pos_z=-27, theta_x = 135), blocking=True)
 
     UR5.MoveJ([88.444300, -105.969638, 109.059761, -96.960870, -110.438692, -144.563103]) 
 
@@ -570,7 +572,7 @@ def T(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture sil
     # HOW DO I FIX THIS - WORKS IN SIM BUT NOT IRL
     UR5.MoveL([255.520000, -89.820000, 244.110000, -152.330000, -104.170000, -40.620000], blocking=True)
 
-    UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool, pos_z = -10, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool, pos_z = -25, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
     time.sleep(5) #actuate for 5s
 
 
@@ -578,7 +580,9 @@ def T(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture sil
 
 def U(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture bristle brush, and actuate for 5s.
     UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool, pos_z = 20, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
-    UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool, pos_z = -10, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
+
+    
+    UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool, pos_z = -25, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
     time.sleep(5) #actuate for 5s
 
 def V(): # Return the Rancilio tool to the tool stand.
@@ -588,6 +592,8 @@ def V(): # Return the Rancilio tool to the tool stand.
 def R(): #Use the cup tool to carefully pick up the cup of coffee and place it in the customer zone.
     # PART R - STARTED
     tls.cup_tool_attach_l_ati()
+
+    UR5.MoveJ([-6.092481, -100.605037, 126.288830, -45.210897, 1.695916, -215.808742])
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=74, pos_x=-100, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
     
     tls.cup_tool_open_ur5()
@@ -599,22 +605,30 @@ def R(): #Use the cup tool to carefully pick up the cup of coffee and place it i
 
     tls.cup_tool_shut_ur5()
     run_visual_program(RDK, 'Hide_Rancilio_Scale_Cup', blocking=True) #hide the cup on the scales
+    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=77, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
 
     run_visual_program(RDK, 'Show_Cup_Tool_Cup', blocking=True) #hide the cup on the scales
-    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=76, pos_x=-100, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=77, pos_x=-100, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
 
 
     UR5.MoveJ([-48.776840, -113.520569, 142.795718, -28.628641, -0.576878, -220.638884])
 
     # TODO: PUT IN ACTUAL CUSTOMER ZONE 
 
-    UR5.MoveJ([-91.037149, -104.362910, 148.652730, -41.925520, -0.572249, -222.344276])
+    UR5.MoveJ([-57.070415, -92.176832, 139.301775, -46.371953, 32.963533, -220.647596])
 
     tls.cup_tool_open_ur5()
-
     run_visual_program(RDK, 'Hide_Cup_Tool_Cup', blocking=True) #hide the cup on the scales
 
-    UR5.MoveJ([-121.815757, -119.327302, 147.901424, -28.561688, -31.335721, -219.990653])
+
+    UR5.MoveJ([-85.194155, -105.780597, 149.544390, -38.917077, 4.854811, -224.845225])
+
+
+
+    # UR5.MoveJ([-91.037149, -104.362910, 148.652730, -41.925520, -0.572249, -222.344276])
+
+    # UR5.MoveJ([-121.815757, -119.327302, 147.901424, -28.561688, -31.335721, -219.990653])
+
     tls.cup_tool_shut_ur5()
     UR5.MoveJ([-121.815757, -126.554662, 119.721341, 6.845755, -31.335721, -219.990653])
 
@@ -625,24 +639,23 @@ def R(): #Use the cup tool to carefully pick up the cup of coffee and place it i
 
 
 
-A()
-B()
-C()
-#D()
-D_sweep()
-D_alt()
-E()
-F()
-G()
-H()
-I()
+#A()
+#B()
+#C()
+# #D()
+#D_sweep()
+#D_alt()
+#E()
+#F()
+#G()
+#H()
+#I()
 
+#M()
+#N()
 
-M()
-N()
-
-J()
-# UR5.MoveJ([95.034247, -95.178398, 149.103879, -50.758080, -39.550311, 137.361298])
+#J()
+UR5.MoveJ([95.034247, -95.178398, 149.103879, -50.758080, -39.550311, 137.361298])
 K()
 final_pose = L()
 
