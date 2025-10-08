@@ -557,7 +557,7 @@ def Q(): #Use the Mazzer tool to lock the Rancilio Scale.
     # Postion before unlocking scales
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5, pos_y=21.53, pos_z=0, theta_x = 125), blocking=True)
     # Flipping Ranccilio Scale Switch
-    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+25, pos_y=+25, pos_z=-31, theta_x = 135), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+25, pos_y=+25, pos_z=-32, theta_x = 135), blocking=True)
     # UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+20, pos_y=+25, pos_z=-27, theta_x = 135), blocking=True)
 
 
