@@ -42,34 +42,6 @@ GROUNDS_WEIGHT_TARGET = 18
 CORRECT_WEIGHT = 30
 
 
-#DOM 
-# a. Pick up the Rancilio tool and place it on the Mazzer Scale pan.
-# b. Use the Mazzer tool to unlock the Mazzer Scale.
-# c. Use the Mazzer tool to turn the Mazzer on, wait 15s, and turn the Mazzer off.
-# d. Use the Mazzer tool to pull the Mazzer dosing lever until the scale reports 20±0.1g of coffee grounds has been deposited in the Rancilio tool.
-# e. Use the Mazzer tool to lock the Mazzer Scale.
-
-# f. Remove the Rancilio tool from the Mazzer.
-# g. Open the WDT fixture, and place the Rancilio tool into the WDT fixture.
-# h. Release the Rancilio tool and close the WDT fixture.
-# i. Use the Mazzer tool to turn the WDT rotor five full revolutions.
-# j. Open the WDT fixture, remove the Rancilio tool and close the WDT fixture.
-
-#Ollie
-# k. Place the Rancilio tool into the PUQ fixture, and wait 2 seconds while the machine tamps the coffee grounds.
-# l. Remove the Rancilio tool from the PUQ fixture, and insert it into the Rancilio group head.
-# m. Use the Mazzer tool to operate the cup dispenser.
-# n. Use the cup tool to pick up the dispensed cup, and place it on the Rancilio Scale pan.
-
-#Lenny
-# o. Use the Mazzer tool to unlock the Rancilio Scale.
-# p. Use the Mazzer tool to operate the Rancilio hot water switch until the scale reports 32±0.1g of water has been dispensed in the cup.
-# q. Use the Mazzer tool to lock the Rancilio Scale.
-# r. Use the cup tool to carefully pick up the cup of coffee and place it in the customer zone.
-# s. Remove the Rancilio tool from the group head.
-# t. Position the Rancilio tool over the Rancilio Tool Cleaner fixture silicone brush, and actuate for 5s.
-# u. Position the Rancilio tool over the Rancilio Tool Cleaner fixture bristle brush, and actuate for 5s.
-# v. Return the Rancilio tool to the tool stand.
 
 
 #COFFEE ORDER
@@ -445,18 +417,12 @@ def S(final_pose): #TODO s) Remove the Rancilio tool from the group head.
 
 
 def M():# #TODO m) Use the Mazzer tool to operate the cup dispenser.
-    # UR5.MoveJ([112.020000, -64.930000, 130.100000, -223.900000, -70.020000, 230.210000]) #another intermeidiate point so we dont hit the tool holder
-    # UR5.MoveJ([71.680000, -64.390000, 129.270000, -262.950000, -88.330000, 214.230000]) #another intermeidiate point so we dont hit the tool holder
+
 
     UR5.MoveJ([158.610000, -98.450000, 102.380000, -93.850000, -89.510000, -241.250000])
-    spin = tf.generate_circular_path(UR5.Pose(), robomath.TxyzRxyz_2_Pose([0,0,0,0,0,0]), -140)
-    UR5.MoveC(spin[1], spin[-1])
+    # spin = tf.generate_circular_path(UR5.Pose(), robomath.TxyzRxyz_2_Pose([0,0,0,0,0,0]), -140)
+    # UR5.MoveC(spin[1], spin[-1])
 
-
-    # UR5.MoveJ([9.594445, -72.709382, 129.539942, -234.755204, -96.626572, 259.018886])
-    # UR5.MoveJ([9.590000, -92.710000, 149.540000, -234.760000, -96.630000, -259.020000])
-    # UR5.MoveJ([5.000000, -70.000000, 136.000000, -244.750000, -96.630000, 0])
-    # UR5.MoveJ([8.559499, -78.508850, 140.672478, -242.039354, -98.820301, -39.734004])
     UR5.MoveJ([8.100552, -77.138453, 138.635954, -241.374905, -98.358935, -241.25])
 
     UR5.MoveJ(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50, off_theta_z=180), blocking=True)
