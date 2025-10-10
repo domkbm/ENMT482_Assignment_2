@@ -150,9 +150,9 @@ def B(): #TODO b) Use the Mazzer tool to unlock the Mazzer Scale.
     # print("move to above the lock")
     UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -10, pos_z=4,theta_x=-120,off_theta_z=150), blocking=True)
     # print("down to unlock the lock")
-    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -22, pos_z=-8,theta_x=-120,off_theta_z=150), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -24, pos_z=-9,theta_x=-120,off_theta_z=150), blocking=True)
     # print("down and across to unlock the lock")
-    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -22, pos_z=50,theta_x=-120, off_theta_z=150), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -24, pos_z=50,theta_x=-120, off_theta_z=150), blocking=True)
     # print("leave lock")
 
 def C(): #TODO c) Use the Mazzer tool to turn the Mazzer on, wait 15s, and turn the Mazzer off.
@@ -298,7 +298,7 @@ def E():# TODO e) Use the Mazzer tool to lock the Mazzer Scale.
     # print("move to above the lock")
     UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -3, pos_z=8,theta_x=-120, off_theta_z=180), blocking=True)
     # print("down to unlock the lock")
-    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= 10, pos_z=-3,theta_x=-120, off_theta_z=180), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= 11, pos_z=-4.5,theta_x=-120, off_theta_z=180), blocking=True)
     # print("down and across to unlock the lock")
 
 def F(): #TODO f) Remove the Rancilio tool from the Mazzer.
@@ -399,6 +399,7 @@ def L(): #TODO l) Remove the Rancilio tool from the PUQ fixture, and insert it i
     rancilio_tool.setVisible(False,False) #put it off the toolhead (visual)
     run_visual_program(RDK, 'Show_Rancilio_Rancilio_Tool_Rotated', blocking=True) #put the tool in the machine (visual)
     final_pose =  UR5.Pose() 
+    UR5.MoveL(robomath.TxyzRxyz_2_Pose([0,0,-2,0,0,0]) * final_pose * robomath.TxyzRxyz_2_Pose([-1,0,0,0,0,0]))
     UR5.MoveL(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-50,0,0,0])) # move away from tool
     return final_pose
 
@@ -438,9 +439,8 @@ def M():# #TODO m) Use the Mazzer tool to operate the cup dispenser.
     UR5.MoveL(tf.pose(points_df, id.Cup_Closed, tool=id.Mazzer_Tip_Tool, pos_x=50, off_theta_z=180), blocking=True)
     print("move to above the latch")
     run_visual_program(RDK, 'Show_Cup_Dispenser_Cup')
-    # UR5.MoveJ([47.010000, -72.190000, 130.980000, -238.790000, -96.780000, 269.990000]) #another intermeidiate point so we dont hit the cup stack
     UR5.MoveJ(UR5.Pose() * robomath.TxyzRxyz_2_Pose([0,0,-30,0,0,0]))
-    UR5.MoveJ([19.490000, -102.380000, 102.600000, -89.470000, -93.710000, 54.370000])
+    UR5.MoveJ([19.490000, -102.380000, 102.600000, -89.470000, -93.710000, -219.73])
     tls.mazzer_tool_detach_l_ati() 
 
 def N():
@@ -520,7 +520,7 @@ def Q(): #Use the Mazzer tool to lock the Rancilio Scale.
     # Postion before unlocking scales
     UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5, pos_y=21.53, pos_z=0, theta_x = 125), blocking=True)
     # Flipping Ranccilio Scale Switch
-    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+25, pos_y=+25, pos_z=-32, theta_x = 135), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+25, pos_y=+25, pos_z=-34, theta_x = 135), blocking=True)
     # UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale, tool=id.Mazzer_Tip_Tool, pos_x=31.5+20, pos_y=+25, pos_z=-27, theta_x = 135), blocking=True)
 
 
@@ -560,7 +560,7 @@ def R(): #Use the cup tool to carefully pick up the cup of coffee and place it i
     # PART R - STARTED
     tls.cup_tool_attach_l_ati()
 
-    UR5.MoveJ([-5.147299, -98.958109, 133.105584, -35.254932, 24.976401, -218.820341])
+    UR5.MoveJ([-9.352821, -101.478139, 135.041891, -34.930757, 20.766093, -218.572880])
     # UR5.MoveJ(tf.pose(points_df, id.Rancillio_Scale_Centre, tool=id.Cup_Closed_Tool, pos_z=74, pos_x=-100, theta_y= 90, theta_x=90, theta_z=90), blocking=True)
     tls.cup_tool_open_ur5()
     
