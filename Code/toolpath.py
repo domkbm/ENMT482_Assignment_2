@@ -38,8 +38,8 @@ import tools
 import indices as id
 import transforms as tf
 
-GROUNDS_WEIGHT_TARGET = 18
-CORRECT_WEIGHT = 30
+GROUNDS_WEIGHT_TARGET = 19.4
+CORRECT_WEIGHT = 31
 
 
 
@@ -98,7 +98,7 @@ def run_visual_program(RDK, name, blocking=True):
 
 
 RDK = Robolink()
-RDK.setRunMode(RUNMODE_SIMULATE)
+RDK.setRunMode(RUNMODE_RUN_ROBOT)
 UR5 = RDK.Item("UR5", ITEM_TYPE_ROBOT)
 tls = tools.Tools(RDK)
 mazzer_scale =  modbus_scale_client.ModbusScaleClient(host = id.IP_MAZZER_3)
@@ -298,7 +298,7 @@ def E():# TODO e) Use the Mazzer tool to lock the Mazzer Scale.
     # print("move to above the lock")
     UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= -3, pos_z=8,theta_x=-120, off_theta_z=180), blocking=True)
     # print("down to unlock the lock")
-    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= 11, pos_z=-4.5,theta_x=-120, off_theta_z=180), blocking=True)
+    UR5.MoveL(tf.pose(points_df, id.Mazzer_Scale_Lock, tool=id.Mazzer_Tip_Tool, pos_x= 11, pos_z=-5,theta_x=-120, off_theta_z=180), blocking=True)
     # print("down and across to unlock the lock")
 
 def F(): #TODO f) Remove the Rancilio tool from the Mazzer.
@@ -539,7 +539,7 @@ def T(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture sil
     # HOW DO I FIX THIS - WORKS IN SIM BUT NOT IRL
     UR5.MoveL([255.520000, -89.820000, 244.110000, -152.330000, -104.170000, -40.620000], blocking=True)
 
-    UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool, pos_z = -25, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, 60, tool=id.Rancillio_Basket_Tool, pos_z = -27, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
     time.sleep(5) #actuate for 5s
 
 
@@ -549,7 +549,7 @@ def U(): # Position the Rancilio tool over the Rancilio Tool Cleaner fixture bri
     UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool, pos_z = 20, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
 
     
-    UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool, pos_z = -25, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
+    UR5.MoveJ(tf.pose(points_df, 61, tool=id.Rancillio_Basket_Tool, pos_z = -27, pos_y=0, theta_z=-90, theta_x=90), blocking=True)
     time.sleep(5) #actuate for 5s
 
 def V(): # Return the Rancilio tool to the tool stand.
